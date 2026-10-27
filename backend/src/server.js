@@ -236,8 +236,8 @@ app.patch('/api/admin/sites/:id', requireAdmin, async (req, res, next) => {
     if (req.body.paymentStatus && !['pending','paid'].includes(req.body.paymentStatus)) return res.status(400).json({message:'Invalid payment status'});
     if (Object.hasOwn(req.body,'priceTzs') && (!Number.isSafeInteger(Number(req.body.priceTzs)) || Number(req.body.priceTzs) < 0)) return res.status(400).json({message:'Invalid price'});
     const values = fields.map(([key])=>key === 'priceTzs' ? Number(req.body[key]) : (req.body[key] === '' ? null : req.body[key]));
-    const updates = fields.map(([,column],i)=>`${column} = ${i+1}`).join(', ');
-    const result = await pool.query(`UPDATE graduation_sites SET ${updates}, updated_at = NOW() WHERE id = ${values.length+1} RETURNING id,slug,status`, [...values,req.params.id]);
+    const updates = fields.map(([,column],i)=>`${column} = $${i+1}`).join(', ');
+    const result = await pool.query(`UPDATE graduation_sites SET ${updates}, updated_at = NOW() WHERE id = $${values.length+1} RETURNING id,slug,status`, [...values,req.params.id]);
     if (!result.rowCount) return res.status(404).json({message:'Site not found'});
     res.json(result.rows[0]);
   } catch(err) { next(err); }
