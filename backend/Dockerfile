@@ -6,13 +6,15 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY src ./src
-
-ENV NODE_ENV=production
-ENV PORT=3001
-ENV UPLOAD_DIR=/app/uploads
+COPY sql ./sql
 
 RUN mkdir -p /app/uploads \
     && chown -R node:node /app
+
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV HOST=0.0.0.0
+ENV UPLOAD_DIR=/app/uploads
 
 USER node
 
