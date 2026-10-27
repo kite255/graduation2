@@ -1,5 +1,8 @@
 
 services:
+  # ==========================================
+  # FRONTEND — React + Nginx
+  # ==========================================
   frontend:
     build:
       context: .
@@ -13,6 +16,9 @@ services:
 
     restart: unless-stopped
 
+  # ==========================================
+  # BACKEND — Node.js + Express
+  # ==========================================
   backend:
     build:
       context: ./backend
@@ -23,9 +29,13 @@ services:
       PORT: "3001"
       HOST: "0.0.0.0"
 
-      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL required}
-      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:?Admin token required}
+      # Separate Coolify PostgreSQL resource
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
 
+      # Temporary administrator authentication
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:?ADMIN_API_TOKEN is required}
+
+      # VPS persistent disk storage
       UPLOAD_DIR: /app/uploads
 
     expose:
@@ -34,33 +44,10 @@ services:
     volumes:
       - graduation2_uploads:/app/uploads
 
-    depends_on:
-      postgres:
-        condition: service_healthy
-
     restart: unless-stopped
 
-  postgres:
-    image: postgres:17-alpine
-
-    environment:
-      POSTGRES_DB: graduation2
-      POSTGRES_USER: graduation
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Password required}
-
-    volumes:
-      - graduation2_db:/var/lib/postgresql/data
-
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - pg_isready -U graduation -d graduation2
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-    restart: unless-stopped
-
+# ==========================================
+# PERSISTENT FILE STORAGE
+# ==========================================
 volumes:
-  graduation2_db:
   graduation2_uploads:
