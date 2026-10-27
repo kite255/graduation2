@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import multer from 'multer';
 import sharp from 'sharp';
 
-import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { randomUUID, randomBytes, createHash, scryptSync, timingSafeEqual } from 'node:crypto';
 import { mkdir, unlink } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -88,35 +88,83 @@ app.use(
 // Replace with secure account-based authentication
 // before enabling the administration dashboard.
 
-function requireAdmin(req, res, next) {
-  const secret = process.env.ADMIN_API_TOKEN;
-
-  const token = req.headers.authorization?.match(
-    /^Bearer (.+)$/i
-  )?.[1];
-
-  if (!secret || !token) {
-    return res.status(401).json({
-      success: false,
-      message: 'Unauthorized access',
-    });
-  }
-
-  const expected = Buffer.from(secret);
-  const received = Buffer.from(token);
-
-  if (
-    expected.length !== received.length ||
-    !timingSafeEqual(expected, received)
-  ) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid authentication token',
-    });
-  }
-
-  next();
+const COOKIE_NAME = 'graduation_admin';
+const SESSION_SECONDS = 8 * 60 * 60;
+const loginAttempts = new Map();
+const hashSession = token => createHash('sha256').update(token).digest('hex');
+const cookieToken = req => {
+  const match = String(req.headers.cookie || '').match(/(?:^|;\\s*)graduation_admin=([a-f0-9]{64})(?:;|$)/);
+  return match?.[1] || null;
+};
+const adminCookie = (token, maxAge) => `${COOKIE_NAME}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/api; Max-Age=${maxAge}`;
+const validOrigin = req => {
+  const origin = req.headers.origin;
+  if (!origin) return false;
+  try { return new URL(origin).host === req.headers.host && new URL(origin).protocol === 'https:'; }
+  catch { return false; }
+};
+async function sessionAuthenticated(req) {
+  const token = cookieToken(req);
+  if (!token) return false;
+  const result = await pool.query('SELECT 1 FROM admin_sessions WHERE session_hash=$1 AND expires_at > NOW()', [hashSession(token)]);
+  return result.rowCount > 0;
 }
+async function requireAdmin(req, res, next) {
+  try {
+    if (await sessionAuthenticated(req)) {
+      if (!['GET','HEAD','OPTIONS'].includes(req.method) && !validOrigin(req)) return res.status(403).json({message:'Invalid request origin'});
+      return next();
+    }
+    // Legacy token is retained for existing API integrations during migration.
+    const secret = process.env.ADMIN_API_TOKEN;
+    const token = req.headers.authorization?.match(/^Bearer (.+)$/i)?.[1];
+    if (secret && token) {
+      const a = Buffer.from(secret), b = Buffer.from(token);
+      if (a.length === b.length && timingSafeEqual(a,b)) return next();
+    }
+    return res.status(401).json({message:'Please sign in'});
+  } catch(err) { next(err); }
+}
+app.post('/api/auth/login', async (req,res,next) => {
+  try {
+    if (!validOrigin(req)) return res.status(403).json({message:'HTTPS required'});
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+    const expectedEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+    const stored = process.env.ADMIN_PASSWORD_HASH || '';
+    const ip = req.ip;
+    const attempt = loginAttempts.get(ip) || {count:0,since:Date.now()};
+    if (Date.now()-attempt.since > 15*60000) {attempt.count=0;attempt.since=Date.now()}
+    if (attempt.count >= 8) return res.status(429).json({message:'Too many attempts. Try again later.'});
+    let valid = false;
+    const parts = stored.split(':');
+    if (parts.length === 3 && parts[0] === 'scrypt' && /^[a-f0-9]{32}$/.test(parts[1]) && /^[a-f0-9]{128}$/.test(parts[2]) && password.length <= 1024) {
+      const actual = scryptSync(password,Buffer.from(parts[1],'hex'),64);
+      valid = timingSafeEqual(actual,Buffer.from(parts[2],'hex')) && email === expectedEmail;
+    }
+    if (!valid || !expectedEmail) {
+      attempt.count++;loginAttempts.set(ip,attempt);
+      return res.status(401).json({message:'Incorrect email or password'});
+    }
+    loginAttempts.delete(ip);
+    const token = randomBytes(32).toString('hex');
+    await pool.query('INSERT INTO admin_sessions (session_hash,expires_at) VALUES ($1,NOW()+INTERVAL \'8 hours\')',[hashSession(token)]);
+    res.setHeader('Set-Cookie',adminCookie(token,SESSION_SECONDS));
+    res.json({authenticated:true,email});
+  } catch(err) {next(err)}
+});
+app.get('/api/auth/me',async(req,res,next)=>{
+  try {res.json({authenticated:await sessionAuthenticated(req)})}catch(err){next(err)}
+});
+app.post('/api/auth/logout',async(req,res,next)=>{
+  try {
+    if (!validOrigin(req)) return res.status(403).json({message:'Invalid request origin'});
+    const token=cookieToken(req);
+    if(token) await pool.query('DELETE FROM admin_sessions WHERE session_hash=$1',[hashSession(token)]);
+    res.setHeader('Set-Cookie',adminCookie('',0));
+    res.json({success:true});
+  } catch(err){next(err)}
+});
 
 // ========================================
 // BACKEND WELCOME ROUTE
