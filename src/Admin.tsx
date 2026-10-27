@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { ArrowLeft, ImagePlus, LockKeyhole, ShieldCheck, UploadCloud } from 'lucide-react'
+import { ArrowLeft, ImagePlus, UploadCloud } from 'lucide-react'
 import './Admin.css'
 
 type Photo = { id?: string; src: string; alt: string }
 type Site = { id: string; slug: string; graduateName: string; status: string; paymentStatus: string; priceTzs: number }
 
 export default function Admin() {
-  const [token, setToken] = useState('')
+  const [authenticated, setAuthenticated] = useState(false)
+  const [checking, setChecking] = useState(true)
   const [file, setFile] = useState<File | null>(null)
   const [alt, setAlt] = useState('')
   const [busy, setBusy] = useState(false)
@@ -40,12 +41,18 @@ export default function Admin() {
     }
   }
 
-  useEffect(() => { void refreshGallery() }, [])
+  useEffect(() => {
+    fetch('/api/auth/me').then(r => r.json()).then(v => {
+      if (!v.authenticated) { window.location.replace('/admin/login'); return }
+      setAuthenticated(true); void refreshGallery()
+    }).catch(() => window.location.replace('/admin/login')).finally(() => setChecking(false))
+  }, [])
+  useEffect(() => { if (authenticated) void refreshSites() }, [authenticated])
 
   async function refreshSites() {
-    if (!token.trim()) return
+    if (!authenticated) return
     try {
-      const res = await fetch('/api/admin/sites', { headers: { Authorization: `Bearer ${token.trim()}` }, cache: 'no-store' })
+      const res = await fetch('/api/admin/sites', { headers: {}, cache: 'no-store' })
       if (!res.ok) throw new Error('Unable to load sites. Verify your admin token.')
       setSites(await res.json())
       setSiteError('')
@@ -58,7 +65,7 @@ export default function Admin() {
     try {
       const response = await fetch('/api/admin/sites', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token.trim()}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ graduateName, slug, priceTzs: Number(priceTzs), eventDate: eventDate || null, eventTime, venue, message: siteMessage })
       })
       const result = await response.json()
@@ -75,7 +82,7 @@ export default function Admin() {
     try {
       const response = await fetch(`/api/admin/sites/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token.trim()}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(changes)
       })
       const result = await response.json()
@@ -89,7 +96,6 @@ export default function Admin() {
     event.preventDefault()
     setError('')
     setNotice('')
-    if (!token.trim()) { setError('Enter your admin API token.'); return }
     if (!file) { setError('Select a photo first.'); return }
     if (file.size > 8 * 1024 * 1024) { setError('Select an image smaller than 8 MB.'); return }
     setBusy(true)
@@ -100,7 +106,7 @@ export default function Admin() {
       if (siteId) payload.append('siteId', siteId)
       const response = await fetch('/api/admin/gallery', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token.trim()}` },
+        headers: {},
         body: payload,
       })
       const result: { message?: string } = await response.json().catch(() => ({}))
@@ -120,11 +126,16 @@ export default function Admin() {
     }
   }
 
+  if (checking || !authenticated) return <main className="admin-shell"><p style={{padding:40}}>Checking administrator session…</p></main>
+  async function logout() {
+    await fetch('/api/auth/logout',{method:'POST'})
+    window.location.assign('/admin/login')
+  }
   return (
     <main className="admin-shell">
       <header className="admin-topbar">
         <a href="/" className="admin-back"><ArrowLeft size={18} /> Back to website</a>
-        <span className="admin-label"><ShieldCheck size={16} /> PHOTO MANAGEMENT</span>
+        <button type="button" className="admin-small-btn" onClick={() => void logout()}>Log out</button>
       </header>
       <div className="admin-wrap">
         <div className="admin-heading">
@@ -136,9 +147,6 @@ export default function Admin() {
           <section className="admin-panel" aria-labelledby="upload-title">
             <h2 id="upload-title"><ImagePlus size={22} /> Upload a photo</h2>
             <form onSubmit={handleUpload} className="admin-form">
-              <label htmlFor="admin-token">Admin API token</label>
-              <div className="admin-token-row"><LockKeyhole size={17}/><input id="admin-token" type="password" autoComplete="off" value={token} onChange={e => setToken(e.target.value)} placeholder="Paste your private token" required /></div>
-              <p className="admin-hint">Use the ADMIN_API_TOKEN from Coolify. It is kept only in this page's memory and is not saved in your browser.</p>
               <label htmlFor="admin-site-upload">Upload to website</label>
               <select id="admin-site-upload" value={siteId} onChange={e => setSiteId(e.target.value)}><option value="">Main website</option>{sites.map(site => <option key={site.id} value={site.id}>{site.graduateName} ({site.slug})</option>)}</select>
               <label htmlFor="admin-photo">Graduation photo</label>
@@ -158,7 +166,7 @@ export default function Admin() {
           </section>
         <section className="admin-panel admin-sites-panel" aria-labelledby="sites-title">
           <div className="admin-gallery-heading"><h2 id="sites-title">Graduation websites</h2><button type="button" className="admin-small-btn" onClick={() => void refreshSites()}>Load sites</button></div>
-          <p className="admin-hint">Enter your admin token above, then load sites. Each graduate gets a separate link on this temporary domain and their own photo gallery.</p>
+          <p className="admin-hint">You are signed in as an administrator. Load sites to manage customer websites. Each graduate gets a separate link on this temporary domain and their own photo gallery.</p>
           <form className="admin-form" onSubmit={createSite}>
             <label htmlFor="graduate-name">Graduate's full name</label><input id="graduate-name" value={graduateName} onChange={e=>setGraduateName(e.target.value)} maxLength={160} required placeholder="e.g. Veronica Daud"/>
             <label htmlFor="graduate-slug">Website URL name</label><input id="graduate-slug" value={slug} onChange={e=>setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,''))} maxLength={63} required placeholder="e.g. veronica"/>
@@ -167,7 +175,7 @@ export default function Admin() {
             <label htmlFor="graduate-time">Time (optional)</label><input id="graduate-time" value={eventTime} onChange={e=>setEventTime(e.target.value)} maxLength={100}/>
             <label htmlFor="graduate-venue">Venue (optional)</label><input id="graduate-venue" value={venue} onChange={e=>setVenue(e.target.value)} maxLength={240}/>
             <label htmlFor="graduate-message">Personal message (optional)</label><textarea id="graduate-message" value={siteMessage} onChange={e=>setSiteMessage(e.target.value)} maxLength={3000} rows={3}/>
-            <button className="admin-submit" type="submit" disabled={siteBusy || !token.trim()}>{siteBusy ? 'Creating…' : 'Create graduation website'}</button>
+            <button className="admin-submit" type="submit" disabled={siteBusy}>{siteBusy ? 'Creating…' : 'Create graduation website'}</button>
           </form>
           {siteError && <p className="admin-error" role="alert">{siteError}</p>}
           {siteNotice && <p className="admin-success" role="status">{siteNotice}</p>}
