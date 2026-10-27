@@ -27,6 +27,9 @@ export default function Admin() {
   const [siteNotice, setSiteNotice] = useState('')
   const [siteError, setSiteError] = useState('')
   const [siteBusy, setSiteBusy] = useState(false)
+  const [heroFiles, setHeroFiles] = useState<Record<string, File | null>>({})
+  const [heroBusy, setHeroBusy] = useState<string | null>(null)
+  const [heroNotice, setHeroNotice] = useState('')
 
   async function refreshGallery() {
     try {
@@ -90,6 +93,23 @@ export default function Admin() {
       setSiteNotice('Website updated successfully.')
       await refreshSites()
     } catch (error) { setSiteError(error instanceof Error ? error.message : 'Could not update site') }
+  }
+
+  async function uploadHero(id: string) {
+    const file = heroFiles[id]
+    if (!file) {setSiteError('Choose a hero portrait first.');return}
+    if (file.size > 8 * 1024 * 1024) {setSiteError('Hero photo must be under 8 MB.');return}
+    setSiteError('');setHeroNotice('');setHeroBusy(id)
+    try {
+      const form = new FormData()
+      form.append('image',file)
+      const res = await fetch(`/api/admin/sites/${id}/hero`,{method:'POST',body:form})
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Could not upload portrait')
+      setHeroNotice('Hero portrait updated. Refresh the graduate website to view it.')
+      setHeroFiles(previous=>({...previous,[id]:null}))
+    } catch(e) {setSiteError(e instanceof Error ? e.message : 'Upload failed')}
+    finally {setHeroBusy(null)}
   }
 
   async function handleUpload(event: FormEvent<HTMLFormElement>) {
@@ -178,8 +198,8 @@ export default function Admin() {
             <button className="admin-submit" type="submit" disabled={siteBusy}>{siteBusy ? 'Creating…' : 'Create graduation website'}</button>
           </form>
           {siteError && <p className="admin-error" role="alert">{siteError}</p>}
-          {siteNotice && <p className="admin-success" role="status">{siteNotice}</p>}
-          <div className="admin-site-list">{sites.map(site => <div className="admin-site-row" key={site.id}><div><strong>{site.graduateName}</strong><small>{site.slug} · {site.priceTzs.toLocaleString()} TZS</small><small>{site.paymentStatus} / {site.status}</small><a className="admin-site-link" href={`/s/${site.slug}`} target="_blank" rel="noopener noreferrer">Open website ↗</a></div><div className="admin-site-actions"><button type="button" onClick={() => void updateSite(site.id, { paymentStatus: site.paymentStatus === 'paid' ? 'pending' : 'paid' })}>{site.paymentStatus === 'paid' ? 'Mark unpaid' : 'Mark paid'}</button><button type="button" onClick={() => void updateSite(site.id, { status: site.status === 'active' ? 'suspended' : 'active' })}>{site.status === 'active' ? 'Suspend' : 'Activate'}</button></div></div>)}</div>
+          {siteNotice && <p className="admin-success" role="status">{siteNotice}</p>}{heroNotice && <p className="admin-success" role="status">{heroNotice}</p>}
+          <div className="admin-site-list">{sites.map(site => <div className="admin-site-row" key={site.id}><div><strong>{site.graduateName}</strong><small>{site.slug} · {site.priceTzs.toLocaleString()} TZS</small><small>{site.paymentStatus} / {site.status}</small><a className="admin-site-link" href={`/s/${site.slug}`} target="_blank" rel="noopener noreferrer">Open website ↗</a></div><div className="admin-hero-upload"><label>Hero portrait<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heif" onChange={e=>setHeroFiles(prev=>({...prev,[site.id]:e.target.files?.[0] || null}))}/></label><button type="button" disabled={heroBusy===site.id} onClick={()=>void uploadHero(site.id)}>{heroBusy===site.id ? "Uploading…" : "Upload hero photo"}</button></div><div className="admin-site-actions"><button type="button" onClick={() => void updateSite(site.id, { paymentStatus: site.paymentStatus === 'paid' ? 'pending' : 'paid' })}>{site.paymentStatus === 'paid' ? 'Mark unpaid' : 'Mark paid'}</button><button type="button" onClick={() => void updateSite(site.id, { status: site.status === 'active' ? 'suspended' : 'active' })}>{site.status === 'active' ? 'Suspend' : 'Activate'}</button></div></div>)}</div>
         </section>
         </div>
       </div>
