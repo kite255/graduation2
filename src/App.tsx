@@ -16,6 +16,15 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [gallery, setGallery] = useState<GalleryImage[]>([])
   const [galleryError, setGalleryError] = useState(false)
+  const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null } | null>(null)
+  const [siteUnavailable, setSiteUnavailable] = useState(false)
+  useEffect(() => {
+    fetch('/api/site').then(async r => {
+      if (!r.ok) { setSiteUnavailable(true); return }
+      const payload = await r.json()
+      setSite(payload.site || null)
+    }).catch(() => setSiteUnavailable(true))
+  }, [])
   useEffect(() => {
     fetch('/api/gallery')
       .then(r => { if (!r.ok) throw new Error('Gallery unavailable'); return r.json() })
@@ -25,6 +34,7 @@ function App() {
       })
       .catch(() => setGalleryError(true))
   }, [])
+  if (siteUnavailable) return <div className="site-unavailable"><GraduationCap size={44}/><h1>This graduation website is not available.</h1><p>Please contact the organizer.</p></div>
   return (
     <div className="site-shell">
       <header className="site-header">
@@ -42,8 +52,8 @@ function App() {
         <section className="hero" id="home">
           <div className="hero-content">
             <div className="eyebrow"><span className="eyebrow-line"/>{event.label}</div>
-            <h1>A Journey Worth<br/><em>Celebrating.</em></h1>
-            <p>Every late night, every challenge, every small victory. It all led to this moment. Join us as we celebrate a remarkable milestone and the beginning of something new.</p>
+            <h1>{site ? site.graduateName : 'A Journey Worth'}<br/><em>Celebrating.</em></h1>
+            <p>{site?.message || 'Every late night, every challenge, every small victory. It all led to this moment. Join us as we celebrate a remarkable milestone and the beginning of something new.'}</p>
             <div className="hero-actions"><a className="button primary" href="#details">Discover the Celebration <ArrowUpRight size={18}/></a><a className="text-link" href="#moments">View moments <span>↗</span></a></div>
             <div className="hero-foot"><span className="small-dot"/> A special day. A lifetime of memories.</div>
           </div>
@@ -58,9 +68,9 @@ function App() {
         <section className="details-section container" id="details">
           <div className="section-heading"><span className="overline">EVERYTHING YOU NEED TO KNOW</span><h2>The celebration <em>details.</em></h2><p>All the essentials for sharing this special day with us.</p></div>
           <div className="detail-grid">
-            <article className="detail-card"><span className="detail-icon"><CalendarDays/></span><span className="detail-number">01 / DATE</span><h3>{event.dateLabel || 'To be confirmed'}</h3><p>The date will be announced here.</p></article>
-            <article className="detail-card"><span className="detail-icon"><Clock3/></span><span className="detail-number">02 / TIME</span><h3>{event.time || 'To be confirmed'}</h3><p>The schedule will be shared here.</p></article>
-            <article className="detail-card"><span className="detail-icon"><MapPin/></span><span className="detail-number">03 / LOCATION</span><h3>{event.venue || 'To be confirmed'}</h3><p>Location details will be shared here.</p></article>
+            <article className="detail-card"><span className="detail-icon"><CalendarDays/></span><span className="detail-number">01 / DATE</span><h3>{site?.eventDate ? new Date(site.eventDate).toLocaleDateString('en-TZ', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : event.dateLabel || 'To be confirmed'}</h3><p>The date will be announced here.</p></article>
+            <article className="detail-card"><span className="detail-icon"><Clock3/></span><span className="detail-number">02 / TIME</span><h3>{site?.eventTime || event.time || 'To be confirmed'}</h3><p>The schedule will be shared here.</p></article>
+            <article className="detail-card"><span className="detail-icon"><MapPin/></span><span className="detail-number">03 / LOCATION</span><h3>{site?.venue || event.venue || 'To be confirmed'}</h3><p>Location details will be shared here.</p></article>
           </div>
         </section>
 
