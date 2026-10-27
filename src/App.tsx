@@ -17,7 +17,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [gallery, setGallery] = useState<GalleryImage[]>([])
   const [galleryError, setGalleryError] = useState(false)
-  const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null } | null>(null)
+  const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null; heroImage: string | null } | null>(null)
   const [siteUnavailable, setSiteUnavailable] = useState(false)
   useEffect(() => {
     fetch(pathSlug ? `/api/sites/${pathSlug}` : '/api/site').then(async r => {
@@ -59,7 +59,7 @@ function App() {
             <div className="hero-foot"><span className="small-dot"/> A special day. A lifetime of memories.</div>
           </div>
           <div className="hero-visual" role="img" aria-label="Graduation celebration visual">
-            <img src="/graduation-hero.jpg" alt="Graduation portrait" onError={e => {e.currentTarget.style.display = 'none'}} />
+            <img src={site?.heroImage || "/graduation-hero.jpg"} alt={site ? `${site.graduateName} graduation portrait` : "Graduation portrait"} onError={e => {e.currentTarget.style.display = 'none'}} />
             <div className="hero-visual-overlay"><span>CLASS OF 2026</span><strong>The next chapter<br/>starts here.</strong></div>
           </div>
           <span className="hero-index">01 / THE CELEBRATION</span>
