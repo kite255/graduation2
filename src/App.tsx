@@ -13,20 +13,21 @@ const event = {
 type GalleryImage = { id?: string; src: string; alt: string }
 
 function App() {
+  const pathSlug = window.location.pathname.match(/^\/s\/([a-z0-9-]+)\/?$/)?.[1] || null
   const [menuOpen, setMenuOpen] = useState(false)
   const [gallery, setGallery] = useState<GalleryImage[]>([])
   const [galleryError, setGalleryError] = useState(false)
   const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null } | null>(null)
   const [siteUnavailable, setSiteUnavailable] = useState(false)
   useEffect(() => {
-    fetch('/api/site').then(async r => {
+    fetch(pathSlug ? `/api/sites/${pathSlug}` : '/api/site').then(async r => {
       if (!r.ok) { setSiteUnavailable(true); return }
       const payload = await r.json()
       setSite(payload.site || null)
     }).catch(() => setSiteUnavailable(true))
   }, [])
   useEffect(() => {
-    fetch('/api/gallery')
+    fetch(pathSlug ? `/api/sites/${pathSlug}/gallery` : '/api/gallery')
       .then(r => { if (!r.ok) throw new Error('Gallery unavailable'); return r.json() })
       .then((images: GalleryImage[]) => {
         if (!Array.isArray(images)) throw new Error('Invalid gallery response')
