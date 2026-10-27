@@ -17,3 +17,5 @@ ALTER TABLE gallery_images ADD COLUMN IF NOT EXISTS site_id UUID REFERENCES grad
 CREATE INDEX IF NOT EXISTS gallery_images_site_created_idx ON gallery_images(site_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS admin_sessions (session_hash VARCHAR(64) PRIMARY KEY, expires_at TIMESTAMPTZ NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS hero_image VARCHAR(255);
