@@ -232,7 +232,7 @@ app.get('/api/site', async (req, res, next) => {
     if (!slug) return res.json({ site: null });
     const site = await resolveSite(req);
     if (!site) return res.status(404).json({ message: 'Website not available' });
-    res.json({ site: { graduateName: site.graduate_name, slug: site.slug, eventDate: site.event_date, eventTime: site.event_time, venue: site.venue, message: site.message } });
+    res.json({ site: { graduateName: site.graduate_name, slug: site.slug, eventDate: site.event_date, eventTime: site.event_time, venue: site.venue, message: site.message, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
   } catch (err) { next(err); }
 });
 app.get('/api/sites/:slug', async (req, res, next) => {
@@ -240,7 +240,7 @@ app.get('/api/sites/:slug', async (req, res, next) => {
     if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(req.params.slug)) return res.status(404).json({message:'Website not available'});
     const site = await resolveSite(req, req.params.slug);
     if (!site) return res.status(404).json({message:'Website not available'});
-    res.json({ site: { graduateName: site.graduate_name, slug:site.slug, eventDate:site.event_date, eventTime:site.event_time, venue:site.venue, message:site.message } });
+    res.json({ site: { graduateName: site.graduate_name, slug:site.slug, eventDate:site.event_date, eventTime:site.event_time, venue:site.venue, message:site.message, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
   } catch (err) { next(err); }
 });
 app.get('/api/sites/:slug/gallery', async (req, res, next) => {
@@ -253,7 +253,7 @@ app.get('/api/sites/:slug/gallery', async (req, res, next) => {
 });
 app.get('/api/admin/sites', requireAdmin, async (_req, res, next) => {
   try {
-    const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, message, status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt" FROM graduation_sites ORDER BY created_at DESC');
+    const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, message, hero_image AS "heroImageFilename", status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt" FROM graduation_sites ORDER BY created_at DESC');
     res.json(rows);
   } catch (err) { next(err); }
 });
@@ -333,6 +333,29 @@ const upload = multer({
     fileSize: MAX_FILE_SIZE,
     files: 1,
   },
+});
+
+// Graduate-specific hero portrait upload
+app.post('/api/admin/sites/:id/hero', requireAdmin, upload.single('image'), async (req,res,next) => {
+  if (!req.file) return res.status(400).json({message:'Select a portrait'});
+  const {rows} = await pool.query('SELECT id,hero_image FROM graduation_sites WHERE id=$1',[req.params.id]);
+  if (!rows.length) return res.status(404).json({message:'Graduate not found'});
+  const filename = randomUUID() + '.webp';
+  const dir = path.join(uploadDir,'hero');
+  const destination = path.join(dir,filename);
+  let saved=false;
+  try {
+    const processor=sharp(req.file.buffer,{limitInputPixels:MAX_IMAGE_PIXELS});
+    const metadata=await processor.metadata();
+    if (!ALLOWED_FORMATS.has(metadata.format)) return res.status(415).json({message:'Unsupported image format'});
+    await mkdir(dir,{recursive:true});
+    await processor.rotate().resize({width:1600,withoutEnlargement:true}).webp({quality:82}).toFile(destination);
+    saved=true;
+    await pool.query('UPDATE graduation_sites SET hero_image=$1,updated_at=NOW() WHERE id=$2',[filename,req.params.id]);
+    // Keep old file until the new image and DB update succeed.
+    if(rows[0].hero_image) await unlink(path.join(dir,rows[0].hero_image)).catch(()=>{});
+    res.json({success:true,heroImage:'/uploads/hero/'+filename});
+  } catch(err) {if(saved)await unlink(destination).catch(()=>{});next(err)}
 });
 
 // ========================================
