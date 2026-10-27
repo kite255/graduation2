@@ -162,22 +162,84 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
+// Managed graduation websites. The hostname is passed by our trusted Nginx proxy.
+const baseDomain = (process.env.SITES_BASE_DOMAIN || '').toLowerCase().trim();
+function siteSlug(req) {
+  if (!baseDomain) return null;
+  const hostname = String(req.headers.host || '').split(':')[0].toLowerCase();
+  const suffix = '.' + baseDomain;
+  if (!hostname.endsWith(suffix)) return null;
+  const slug = hostname.slice(0, -suffix.length);
+  return /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(slug) ? slug : null;
+}
+async function resolveSite(req) {
+  const slug = siteSlug(req);
+  if (!slug) return null;
+  const result = await pool.query('SELECT * FROM graduation_sites WHERE slug = $1 AND status = $2 AND (expires_at IS NULL OR expires_at >= CURRENT_DATE)', [slug, 'active']);
+  return result.rows[0] || null;
+}
+app.get('/api/site', async (req, res, next) => {
+  try {
+    const slug = siteSlug(req);
+    if (!slug) return res.json({ site: null });
+    const site = await resolveSite(req);
+    if (!site) return res.status(404).json({ message: 'Website not available' });
+    res.json({ site: { graduateName: site.graduate_name, slug: site.slug, eventDate: site.event_date, eventTime: site.event_time, venue: site.venue, message: site.message } });
+  } catch (err) { next(err); }
+});
+app.get('/api/admin/sites', requireAdmin, async (_req, res, next) => {
+  try {
+    const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, message, status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt" FROM graduation_sites ORDER BY created_at DESC');
+    res.json(rows);
+  } catch (err) { next(err); }
+});
+app.post('/api/admin/sites', requireAdmin, async (req, res, next) => {
+  try {
+    const { slug, graduateName, eventDate, eventTime, venue, message, priceTzs } = req.body;
+    const cleanSlug = String(slug || '').toLowerCase().trim();
+    const cleanName = String(graduateName || '').trim();
+    if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(cleanSlug) || ['www', 'admin', 'api', 'app'].includes(cleanSlug) || !cleanName || cleanName.length > 160) {
+      return res.status(400).json({ message: 'Enter a valid graduate name and a unique, lowercase subdomain.' });
+    }
+    if (priceTzs != null && (!Number.isSafeInteger(Number(priceTzs)) || Number(priceTzs) < 0)) return res.status(400).json({message:'Invalid price'});
+    const result = await pool.query(`INSERT INTO graduation_sites(id, slug, graduate_name, event_date, event_time, venue, message, price_tzs)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id,slug,status`,
+      [randomUUID(), cleanSlug, cleanName, eventDate || null, String(eventTime || '').slice(0,100), String(venue || '').slice(0,240), String(message || '').slice(0,3000), Number(priceTzs || 0)]);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ message: 'Subdomain already exists' });
+    next(err);
+  }
+});
+app.patch('/api/admin/sites/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const allowed = { graduateName:'graduate_name',eventDate:'event_date',eventTime:'event_time',venue:'venue',message:'message',status:'status',paymentStatus:'payment_status',priceTzs:'price_tzs',expiresAt:'expires_at' };
+    const fields = Object.entries(allowed).filter(([key])=>Object.hasOwn(req.body,key));
+    if (!fields.length) return res.status(400).json({message:'No changes provided'});
+    if (req.body.status && !['draft','active','suspended'].includes(req.body.status)) return res.status(400).json({message:'Invalid status'});
+    if (req.body.paymentStatus && !['pending','paid'].includes(req.body.paymentStatus)) return res.status(400).json({message:'Invalid payment status'});
+    if (Object.hasOwn(req.body,'priceTzs') && (!Number.isSafeInteger(Number(req.body.priceTzs)) || Number(req.body.priceTzs) < 0)) return res.status(400).json({message:'Invalid price'});
+    const values = fields.map(([key])=>key === 'priceTzs' ? Number(req.body[key]) : (req.body[key] === '' ? null : req.body[key]));
+    const updates = fields.map(([,column],i)=>`${column} = ${i+1}`).join(', ');
+    const result = await pool.query(`UPDATE graduation_sites SET ${updates}, updated_at = NOW() WHERE id = ${values.length+1} RETURNING id,slug,status`, [...values,req.params.id]);
+    if (!result.rowCount) return res.status(404).json({message:'Site not found'});
+    res.json(result.rows[0]);
+  } catch(err) { next(err); }
+});
+
 // ========================================
 // PUBLIC GALLERY
 // ========================================
 
 app.get('/api/gallery', async (_req, res, next) => {
   try {
-    const result = await pool.query(`
-      SELECT
-        id,
-        filename,
-        alt_text,
-        created_at
-      FROM gallery_images
-      ORDER BY created_at DESC
-      LIMIT 60
-    `);
+    const slug = siteSlug(_req);
+    const site = slug ? await resolveSite(_req) : null;
+    if (slug && !site) return res.status(404).json({ message: 'Website not available' });
+    const result = await pool.query(
+      'SELECT id, filename, alt_text, created_at FROM gallery_images WHERE site_id IS NOT DISTINCT FROM $1 ORDER BY created_at DESC LIMIT 60',
+      [site?.id || null]
+    );
 
     const images = result.rows.map((image) => ({
       id: image.id,
@@ -238,6 +300,11 @@ app.post(
       filename
     );
 
+    const siteId = req.body.siteId || null;
+    if (siteId) {
+      const check = await pool.query('SELECT id FROM graduation_sites WHERE id = $1', [siteId]);
+      if (!check.rowCount) return res.status(400).json({message:'Invalid graduation website'});
+    }
     let fileSaved = false;
 
     try {
@@ -274,11 +341,11 @@ app.post(
         INSERT INTO gallery_images (
           id,
           filename,
-          alt_text
+          alt_text, site_id
         )
-        VALUES ($1, $2, $3)
+        VALUES ($1, $2, $3, $4)
         `,
-        [imageId, filename, alt]
+        [imageId, filename, alt, siteId]
       );
 
       return res.status(201).json({
