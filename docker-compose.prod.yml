@@ -34,6 +34,8 @@ services:
 
       # Temporary administrator authentication
       ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:?ADMIN_API_TOKEN is required}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL is required}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:?ADMIN_PASSWORD_HASH is required}
 
       # VPS persistent disk storage
       UPLOAD_DIR: /app/uploads
