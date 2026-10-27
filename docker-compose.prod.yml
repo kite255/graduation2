@@ -38,6 +38,9 @@ services:
       # VPS persistent disk storage
       UPLOAD_DIR: /app/uploads
 
+      # Optional: parent domain for graduate subdomains
+      SITES_BASE_DOMAIN: ${SITES_BASE_DOMAIN:-}
+
     expose:
       - "3001"
 
