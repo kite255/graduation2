@@ -13,12 +13,16 @@ import path from 'node:path';
 import { pool } from './db.js';
 
 // ========================================
-// Application Configuration
+// APPLICATION CONFIGURATION
 // ========================================
 
 const app = express();
 
 const port = Number(process.env.PORT || 3001);
+
+// Listen on all container interfaces for Docker.
+// Keep the backend port private in Docker Compose.
+const host = process.env.HOST || '0.0.0.0';
 
 const uploadDir = path.resolve(
   process.env.UPLOAD_DIR || '../uploads'
@@ -29,18 +33,35 @@ const galleryDir = path.join(uploadDir, 'gallery');
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
 const MAX_IMAGE_PIXELS = 30_000_000;
 
-const ALLOWED_FORMATS = [
+const ALLOWED_FORMATS = new Set([
   'jpeg',
   'png',
   'webp',
   'avif',
   'heif',
-];
-
-await mkdir(galleryDir, { recursive: true });
+]);
 
 // ========================================
-// Security Middleware
+// INITIALIZE STORAGE
+// ========================================
+
+try {
+  await mkdir(galleryDir, {
+    recursive: true,
+  });
+
+  console.log('Upload storage initialized');
+} catch (error) {
+  console.error(
+    'Unable to initialize upload storage:',
+    error
+  );
+
+  process.exit(1);
+}
+
+// ========================================
+// SECURITY MIDDLEWARE
 // ========================================
 
 app.disable('x-powered-by');
@@ -60,12 +81,12 @@ app.use(
 );
 
 // ========================================
-// Administrator Authentication
+// ADMINISTRATOR AUTHENTICATION
 // ========================================
 
-// Temporary server-side API token authentication.
-// Replace with account-based admin authentication
-// before deploying the administration dashboard.
+// Temporary API token authentication.
+// Replace with secure account-based authentication
+// before enabling the administration dashboard.
 
 function requireAdmin(req, res, next) {
   const secret = process.env.ADMIN_API_TOKEN;
@@ -98,11 +119,11 @@ function requireAdmin(req, res, next) {
 }
 
 // ========================================
-// Backend Welcome Route
+// BACKEND WELCOME ROUTE
 // ========================================
 
 app.get('/', (_req, res) => {
-  res.json({
+  res.status(200).json({
     application: 'Graduation Website 2.0',
     service: 'Backend API',
     version: '0.1.0',
@@ -116,7 +137,7 @@ app.get('/', (_req, res) => {
 });
 
 // ========================================
-// Health Check
+// HEALTH CHECK
 // ========================================
 
 app.get('/api/health', async (_req, res) => {
@@ -129,7 +150,10 @@ app.get('/api/health', async (_req, res) => {
       application: 'Graduation Website 2.0',
     });
   } catch (error) {
-    console.error('Database health check failed:', error);
+    console.error(
+      'Database health check failed:',
+      error
+    );
 
     res.status(503).json({
       status: 'unavailable',
@@ -139,7 +163,7 @@ app.get('/api/health', async (_req, res) => {
 });
 
 // ========================================
-// Public Gallery API
+// PUBLIC GALLERY
 // ========================================
 
 app.get('/api/gallery', async (_req, res, next) => {
@@ -157,9 +181,11 @@ app.get('/api/gallery', async (_req, res, next) => {
 
     const images = result.rows.map((image) => ({
       id: image.id,
+
       src:
         '/uploads/gallery/' +
         encodeURIComponent(image.filename),
+
       alt: image.alt_text,
       createdAt: image.created_at,
     }));
@@ -171,7 +197,7 @@ app.get('/api/gallery', async (_req, res, next) => {
 });
 
 // ========================================
-// Image Upload Configuration
+// IMAGE UPLOAD CONFIGURATION
 // ========================================
 
 const upload = multer({
@@ -184,7 +210,7 @@ const upload = multer({
 });
 
 // ========================================
-// Administrator Gallery Upload
+// ADMINISTRATOR GALLERY UPLOAD
 // ========================================
 
 app.post(
@@ -221,14 +247,14 @@ app.post(
 
       const metadata = await processor.metadata();
 
-      if (!ALLOWED_FORMATS.includes(metadata.format)) {
+      if (!ALLOWED_FORMATS.has(metadata.format)) {
         return res.status(415).json({
           success: false,
           message: 'Unsupported image format',
         });
       }
 
-      // Automatically orient, resize and optimize images.
+      // Optimize and convert to WebP.
       await processor
         .rotate()
         .resize({
@@ -242,6 +268,7 @@ app.post(
 
       fileSaved = true;
 
+      // Store file metadata in PostgreSQL.
       await pool.query(
         `
         INSERT INTO gallery_images (
@@ -254,9 +281,10 @@ app.post(
         [imageId, filename, alt]
       );
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         message: 'Image uploaded successfully',
+
         image: {
           id: imageId,
           src: `/uploads/gallery/${filename}`,
@@ -264,9 +292,16 @@ app.post(
         },
       });
     } catch (error) {
-      // Prevent orphaned files when database insertion fails.
+      // Remove file if database insertion fails.
       if (fileSaved) {
-        await unlink(destination).catch(() => {});
+        await unlink(destination).catch(
+          (cleanupError) => {
+            console.error(
+              'Failed to clean up uploaded file:',
+              cleanupError
+            );
+          }
+        );
       }
 
       next(error);
@@ -275,7 +310,7 @@ app.post(
 );
 
 // ========================================
-// Public Uploaded Files
+// PUBLIC FILE STORAGE
 // ========================================
 
 app.use(
@@ -284,11 +319,12 @@ app.use(
     dotfiles: 'deny',
     fallthrough: false,
     maxAge: '7d',
+    index: false,
   })
 );
 
 // ========================================
-// Unknown API Routes
+// UNKNOWN API ROUTES
 // ========================================
 
 app.use('/api', (_req, res) => {
@@ -299,13 +335,14 @@ app.use('/api', (_req, res) => {
 });
 
 // ========================================
-// Global Error Handling
+// GLOBAL ERROR HANDLER
 // ========================================
 
 app.use((error, _req, res, _next) => {
   if (error instanceof multer.MulterError) {
     return res.status(400).json({
       success: false,
+
       message:
         error.code === 'LIMIT_FILE_SIZE'
           ? 'Image must not exceed 8 MB'
@@ -316,26 +353,50 @@ app.use((error, _req, res, _next) => {
   if (error?.status === 404) {
     return res.status(404).json({
       success: false,
-      message: 'File not found',
+      message: 'Resource not found',
     });
   }
 
   console.error('Backend error:', error);
 
-  res.status(500).json({
+  return res.status(500).json({
     success: false,
     message: 'Internal server error',
   });
 });
 
 // ========================================
-// Start Server
+// GRACEFUL SHUTDOWN
 // ========================================
 
-app.listen(port, '127.0.0.1', () => {
+let server;
+
+async function shutdown(signal) {
+  console.log(`${signal} received. Shutting down...`);
+
+  server.close(async () => {
+    try {
+      await pool.end();
+      console.log('Database pool closed');
+      process.exit(0);
+    } catch (error) {
+      console.error('Shutdown error:', error);
+      process.exit(1);
+    }
+  });
+}
+
+// ========================================
+// START EXPRESS SERVER
+// ========================================
+
+server = app.listen(port, host, () => {
   console.log('====================================');
   console.log('Graduation Website 2.0');
   console.log('Backend API Running');
-  console.log(`URL: http://localhost:${port}`);
+  console.log(`Listening on ${host}:${port}`);
   console.log('====================================');
 });
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
