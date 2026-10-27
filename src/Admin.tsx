@@ -53,7 +53,7 @@ export default function Admin() {
     if (!authenticated) return
     try {
       const res = await fetch('/api/admin/sites', { headers: {}, cache: 'no-store' })
-      if (!res.ok) throw new Error('Unable to load sites. Verify your admin token.')
+      if (!res.ok) throw new Error('Unable to load sites. Please sign in again.')
       setSites(await res.json())
       setSiteError('')
     } catch (error) { setSiteError(error instanceof Error ? error.message : 'Unable to load sites') }
@@ -111,7 +111,7 @@ export default function Admin() {
       })
       const result: { message?: string } = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(response.status === 401
-        ? 'Invalid admin token. Check your Coolify ADMIN_API_TOKEN.'
+        ? 'Your session has expired. Please sign in again.'
         : result.message || 'Upload failed. Please try again.')
       setNotice('Photo uploaded successfully. It is now available in the public gallery.')
       setFile(null)
