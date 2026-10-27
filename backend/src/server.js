@@ -93,7 +93,7 @@ const SESSION_SECONDS = 8 * 60 * 60;
 const loginAttempts = new Map();
 const hashSession = token => createHash('sha256').update(token).digest('hex');
 const cookieToken = req => {
-  const match = String(req.headers.cookie || '').match(/(?:^|;\\s*)graduation_admin=([a-f0-9]{64})(?:;|$)/);
+  const match = String(req.headers.cookie || '').match(/(?:^|;\s*)graduation_admin=([a-f0-9]{64})(?:;|$)/);
   return match?.[1] || null;
 };
 const adminCookie = (token, maxAge) => `${COOKIE_NAME}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/api; Max-Age=${maxAge}`;
