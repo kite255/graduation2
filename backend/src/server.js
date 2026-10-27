@@ -172,8 +172,8 @@ function siteSlug(req) {
   const slug = hostname.slice(0, -suffix.length);
   return /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(slug) ? slug : null;
 }
-async function resolveSite(req) {
-  const slug = siteSlug(req);
+async function resolveSite(req, explicitSlug = null) {
+  const slug = explicitSlug || siteSlug(req);
   if (!slug) return null;
   const result = await pool.query('SELECT * FROM graduation_sites WHERE slug = $1 AND status = $2 AND (expires_at IS NULL OR expires_at >= CURRENT_DATE)', [slug, 'active']);
   return result.rows[0] || null;
@@ -185,6 +185,22 @@ app.get('/api/site', async (req, res, next) => {
     const site = await resolveSite(req);
     if (!site) return res.status(404).json({ message: 'Website not available' });
     res.json({ site: { graduateName: site.graduate_name, slug: site.slug, eventDate: site.event_date, eventTime: site.event_time, venue: site.venue, message: site.message } });
+  } catch (err) { next(err); }
+});
+app.get('/api/sites/:slug', async (req, res, next) => {
+  try {
+    if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(req.params.slug)) return res.status(404).json({message:'Website not available'});
+    const site = await resolveSite(req, req.params.slug);
+    if (!site) return res.status(404).json({message:'Website not available'});
+    res.json({ site: { graduateName: site.graduate_name, slug:site.slug, eventDate:site.event_date, eventTime:site.event_time, venue:site.venue, message:site.message } });
+  } catch (err) { next(err); }
+});
+app.get('/api/sites/:slug/gallery', async (req, res, next) => {
+  try {
+    const site = await resolveSite(req, req.params.slug);
+    if (!site) return res.status(404).json({message:'Website not available'});
+    const {rows} = await pool.query('SELECT id, filename, alt_text, created_at FROM gallery_images WHERE site_id=$1 ORDER BY created_at DESC LIMIT 60',[site.id]);
+    res.json(rows.map(image => ({id:image.id,src:'/uploads/gallery/'+encodeURIComponent(image.filename),alt:image.alt_text,createdAt:image.created_at})));
   } catch (err) { next(err); }
 });
 app.get('/api/admin/sites', requireAdmin, async (_req, res, next) => {
