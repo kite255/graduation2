@@ -59,7 +59,7 @@ function App() {
             <div className="hero-foot"><span className="small-dot"/> A special day. A lifetime of memories.</div>
           </div>
           <div className="hero-visual" role="img" aria-label="Graduation celebration visual">
-            <img src={site?.heroImage || "/graduation-hero.jpg"} alt={site ? `${site.graduateName} graduation portrait` : "Graduation portrait"} onError={e => {e.currentTarget.style.display = 'none'}} />
+            {(site?.heroImage || (!pathSlug ? "/graduation-hero.jpg" : null)) && <img key={site?.heroImage || "default-hero"} src={site?.heroImage || "/graduation-hero.jpg"} alt={site ? `${site.graduateName} graduation portrait` : "Graduation portrait"} /> }
             <div className="hero-visual-overlay"><span>CLASS OF 2026</span><strong>The next chapter<br/>starts here.</strong></div>
           </div>
           <span className="hero-index">01 / THE CELEBRATION</span>
