@@ -158,10 +158,10 @@ export default function Admin() {
           </section>
         <section className="admin-panel admin-sites-panel" aria-labelledby="sites-title">
           <div className="admin-gallery-heading"><h2 id="sites-title">Graduation websites</h2><button type="button" className="admin-small-btn" onClick={() => void refreshSites()}>Load sites</button></div>
-          <p className="admin-hint">Enter your admin token above, then load sites. Each graduate gets a separate subdomain and gallery.</p>
+          <p className="admin-hint">Enter your admin token above, then load sites. Each graduate gets a separate link on this temporary domain and their own photo gallery.</p>
           <form className="admin-form" onSubmit={createSite}>
             <label htmlFor="graduate-name">Graduate's full name</label><input id="graduate-name" value={graduateName} onChange={e=>setGraduateName(e.target.value)} maxLength={160} required placeholder="e.g. Veronica Daud"/>
-            <label htmlFor="graduate-slug">Subdomain</label><input id="graduate-slug" value={slug} onChange={e=>setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,''))} maxLength={63} required placeholder="e.g. veronica"/>
+            <label htmlFor="graduate-slug">Website URL name</label><input id="graduate-slug" value={slug} onChange={e=>setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,''))} maxLength={63} required placeholder="e.g. veronica"/>
             <label htmlFor="graduate-price">Price (TZS)</label><input id="graduate-price" type="number" min="0" step="1" value={priceTzs} onChange={e=>setPriceTzs(e.target.value)} required/>
             <label htmlFor="graduate-date">Ceremony date (optional)</label><input id="graduate-date" type="date" value={eventDate} onChange={e=>setEventDate(e.target.value)}/>
             <label htmlFor="graduate-time">Time (optional)</label><input id="graduate-time" value={eventTime} onChange={e=>setEventTime(e.target.value)} maxLength={100}/>
@@ -171,7 +171,7 @@ export default function Admin() {
           </form>
           {siteError && <p className="admin-error" role="alert">{siteError}</p>}
           {siteNotice && <p className="admin-success" role="status">{siteNotice}</p>}
-          <div className="admin-site-list">{sites.map(site => <div className="admin-site-row" key={site.id}><div><strong>{site.graduateName}</strong><small>{site.slug} · {site.priceTzs.toLocaleString()} TZS</small><small>{site.paymentStatus} / {site.status}</small></div><div className="admin-site-actions"><button type="button" onClick={() => void updateSite(site.id, { paymentStatus: site.paymentStatus === 'paid' ? 'pending' : 'paid' })}>{site.paymentStatus === 'paid' ? 'Mark unpaid' : 'Mark paid'}</button><button type="button" onClick={() => void updateSite(site.id, { status: site.status === 'active' ? 'suspended' : 'active' })}>{site.status === 'active' ? 'Suspend' : 'Activate'}</button></div></div>)}</div>
+          <div className="admin-site-list">{sites.map(site => <div className="admin-site-row" key={site.id}><div><strong>{site.graduateName}</strong><small>{site.slug} · {site.priceTzs.toLocaleString()} TZS</small><small>{site.paymentStatus} / {site.status}</small><a className="admin-site-link" href={`/s/${site.slug}`} target="_blank" rel="noopener noreferrer">Open website ↗</a></div><div className="admin-site-actions"><button type="button" onClick={() => void updateSite(site.id, { paymentStatus: site.paymentStatus === 'paid' ? 'pending' : 'paid' })}>{site.paymentStatus === 'paid' ? 'Mark unpaid' : 'Mark paid'}</button><button type="button" onClick={() => void updateSite(site.id, { status: site.status === 'active' ? 'suspended' : 'active' })}>{site.status === 'active' ? 'Suspend' : 'Activate'}</button></div></div>)}</div>
         </section>
         </div>
       </div>
