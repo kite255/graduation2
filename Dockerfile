@@ -6,6 +6,8 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+ARG VITE_SITES_BASE_DOMAIN
+ENV VITE_SITES_BASE_DOMAIN=$VITE_SITES_BASE_DOMAIN
 RUN npm run build
 
 FROM nginx:1.27-alpine
