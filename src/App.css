@@ -190,3 +190,20 @@ body{background:var(--ivory)}
 .wishes-pagination button:disabled{opacity:.42;cursor:not-allowed}
 @media(max-width:900px){.wishes-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.wishes-grid{grid-template-columns:1fr}.wishes-pagination{gap:12px}.wishes-pagination button{padding:10px 15px}}
+
+/* Auto-advancing wishes carousel */
+.wishes-carousel{max-width:840px;margin:32px auto 0}
+.wishes-slider-viewport{overflow:hidden;border-radius:18px}
+.wishes-slider-track{display:flex;transition:transform .6s cubic-bezier(.22,.61,.36,1);will-change:transform}
+.wish-slide{flex:0 0 100%;width:100%;padding:2px}
+.wish-slide .wish-card{min-height:230px;max-width:none;box-sizing:border-box;justify-content:center}
+.wish-slide .wish-card p{font-style:normal;font-family:'DM Sans',sans-serif;font-size:clamp(15px,1.6vw,19px);line-height:1.75;max-width:670px}
+.wish-slide .wish-card footer{margin-top:25px}
+.wishes-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px}
+.wishes-counter{font-size:12px;color:#846e70}
+.wishes-control-buttons{display:flex;gap:9px}
+.wishes-control-buttons button{width:42px;height:42px;display:grid;place-items:center;border:1px solid #ddc8cb;border-radius:50%;background:#fff;color:#70283a;cursor:pointer}
+.wishes-control-buttons button:hover{background:#70283a;color:#fff}
+.wishes-controls button:focus-visible{outline:3px solid #b2808b;outline-offset:3px}
+@media(max-width:650px){.wishes-carousel{margin-top:24px}.wish-slide .wish-card{min-height:210px}.wishes-controls{padding:0 2px}}
+@media(prefers-reduced-motion:reduce){.wishes-slider-track{transition:none}}
