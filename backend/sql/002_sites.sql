@@ -46,3 +46,6 @@ ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS show_gifts BOOLEAN NOT NUL
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS show_countdown BOOLEAN NOT NULL DEFAULT FALSE;
 
 ALTER TABLE graduation_rsvps ADD COLUMN IF NOT EXISTS attendance_choice VARCHAR(12);
+
+-- Additional per-graduate ways to receive thoughtful gifts; legacy gift fields are preserved.
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS gift_methods JSONB NOT NULL DEFAULT '[]'::jsonb;
