@@ -307,12 +307,13 @@ app.post('/api/sites/:slug/rsvp', limitRsvp, async (req,res,next) => {
     if (!site) return res.status(404).json({message:'Website not available'});
     if (req.body.website) return res.status(201).json({success:true});
     const name=String(req.body.name || '').trim();
-    const attending=req.body.attending;
+    const choice=req.body.attendanceChoice ?? (req.body.attending===true?'yes':req.body.attending===false?'no':null);
+    const attending=choice==='yes'?true:choice==='no'?false:null;
     const message=String(req.body.message || '').trim();
-    if(!name || name.length>120 || (attending!==null && typeof attending!=='boolean') || message.length>1200 || (attending===null && !message)) return res.status(400).json({message:'Enter your name and choose attendance or write a wish'});
+    if(!name || name.length>120 || (choice!==null && !['yes','maybe','no'].includes(choice)) || message.length>1200 || (choice===null && !message)) return res.status(400).json({message:'Enter your name and choose attendance or write a wish'});
     const recent=await pool.query('SELECT 1 FROM graduation_rsvps WHERE site_id=$1 AND lower(guest_name)=lower($2) AND created_at>NOW()-INTERVAL \'10 minutes\' LIMIT 1',[site.id,name]);
     if(recent.rowCount)return res.status(409).json({message:'A response with this name was recently submitted. Please try later.'});
-    await pool.query('INSERT INTO graduation_rsvps(id,site_id,guest_name,attending,message,wish_approved) VALUES($1,$2,$3,$4,$5,TRUE)',[randomUUID(),site.id,name,attending,message]);
+    await pool.query('INSERT INTO graduation_rsvps(id,site_id,guest_name,attending,message,wish_approved,attendance_choice) VALUES($1,$2,$3,$4,$5,TRUE,$6)',[randomUUID(),site.id,name,attending,message,choice]);
     res.status(201).json({success:true,message:'Thank you for responding'});
   } catch(err){next(err)}
 });
@@ -355,7 +356,7 @@ app.get('/api/admin/sites/:id/rsvp-summary',requireAdmin,async(req,res,next)=>{
 });
 app.get('/api/admin/sites/:id/rsvps',requireAdmin,async(req,res,next)=>{
   try {
-    const {rows}=await pool.query('SELECT id,guest_name AS "guestName",attending,message,wish_approved AS "wishApproved",created_at AS "createdAt" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 500',[req.params.id]);
+    const {rows}=await pool.query('SELECT id,guest_name AS "guestName",attending,attendance_choice AS "attendanceChoice",message,wish_approved AS "wishApproved",created_at AS "createdAt" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 500',[req.params.id]);
     res.json(rows);
   } catch(err){next(err)}
 });
