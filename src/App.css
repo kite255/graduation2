@@ -391,3 +391,17 @@ body{background:var(--ivory)}
 .graduate-footer-inner>span{font-size:10px;color:#bca7aa}
 .graduate-footer-inner>a{font-size:11px;color:#dfc7c9;margin-top:7px}
 @media(max-width:650px){.platform-footer{padding-top:37px}.platform-footer-main{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 20px;padding-bottom:30px}.platform-footer-about{grid-column:1/-1}.platform-footer .footer-bottom{flex-wrap:wrap}.graduate-footer{padding:31px 0 24px}}
+
+/* Graduate pages: tighter spacing and clearer touch targets */
+@media(max-width:650px){
+  .site-shell:not(.platform-site) .details-section{padding-top:42px;padding-bottom:35px}
+  .site-shell:not(.platform-site) .gallery-section{padding-top:45px;padding-bottom:46px}
+  .site-shell:not(.platform-site) .rsvp-section{padding-top:42px;padding-bottom:44px}
+  .site-shell:not(.platform-site) .wishes-section{padding-top:44px;padding-bottom:45px}
+  .site-shell:not(.platform-site) .gifts-section{padding-top:0;padding-bottom:40px}
+  .site-shell:not(.platform-site) .section-heading h2{font-size:clamp(32px,9vw,39px)}
+  .site-shell:not(.platform-site) .rsvp-choices button{min-height:48px}
+  .site-shell:not(.platform-site) .gifts-action{min-height:38px;display:inline-flex;align-items:center}
+  .site-shell:not(.platform-site) .gift-payment button{min-height:42px}
+  .site-shell:not(.platform-site) .gallery-preview .gallery-photo{aspect-ratio:4/3}
+}
