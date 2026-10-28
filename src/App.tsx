@@ -58,6 +58,7 @@ function App() {
         <nav className={menuOpen ? 'nav open' : 'nav'} aria-label="Main navigation">
           <a onClick={() => setMenuOpen(false)} href="#home">Home</a>
           <a onClick={() => setMenuOpen(false)} href="#details">Event Info</a>
+          {pathSlug && <a onClick={() => setMenuOpen(false)} href="#wishes">Wishes</a>}
           <a onClick={() => setMenuOpen(false)} href="#moments">Gallery</a>
           <a className="nav-cta" onClick={() => setMenuOpen(false)} href={pathSlug ? "#rsvp" : "#details"}>{pathSlug ? "RSVP" : "Explore Event"} <ArrowUpRight size={15}/></a>
         </nav>
@@ -73,7 +74,7 @@ function App() {
             <div className="hero-actions"><a className="button primary" href={pathSlug ? "#rsvp" : "#details"}>{pathSlug ? "Confirm Attendance" : "Discover the Celebration"} <ArrowUpRight size={18}/></a><a className="text-link" href="#moments">View moments</a></div>
             <div className="hero-foot"><span className="small-dot"/> A milestone to cherish. A future to celebrate.</div>
           </div>
-          <div className="hero-visual">
+          <div className="hero-visual"><div className="hero-photo-frame" aria-hidden="true" />
             {(site?.heroImage || (!pathSlug ? "/graduation-hero.jpg" : null)) && <img key={site?.heroImage || "default-hero"} src={site?.heroImage || "/graduation-hero.jpg"} alt={site ? `${site.graduateName} graduation portrait` : "Graduation portrait"} /> }
             <div className="hero-visual-overlay"><span>{site?.eventDate ? `CLASS OF ${new Date(site.eventDate).getUTCFullYear()}` : "THE GRADUATION CELEBRATION"}</span><strong>The next chapter<br/>starts here.</strong></div>
           </div>
