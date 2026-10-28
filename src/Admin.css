@@ -66,3 +66,11 @@
 .admin-photo-order button{min-width:36px;min-height:34px;border:1px solid #dbc3c4;border-radius:8px;background:#fff;color:#672b39;cursor:pointer}
 .admin-photo-order button:disabled{opacity:.35;cursor:not-allowed}
 .admin-photo-order button:focus-visible{outline:3px solid #a56e7c;outline-offset:2px}
+
+.graduate-preferences{display:grid;gap:12px;padding:14px;border:1px solid #e8d9d9;border-radius:12px;background:#fffaf8}
+.graduate-preferences>label{display:grid;gap:6px;font-size:13px}
+.graduate-preferences select{min-height:40px;padding:7px;border:1px solid #cdb9bb;border-radius:7px;background:white}
+.graduate-visibility{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.graduate-visibility label{display:flex;align-items:center;gap:8px;font-size:12px}
+.graduate-visibility input{width:17px;height:17px;accent-color:#783849}
+@media(max-width:520px){.graduate-visibility{grid-template-columns:1fr}}
