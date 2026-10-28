@@ -19,3 +19,6 @@ CREATE INDEX IF NOT EXISTS gallery_images_site_created_idx ON gallery_images(sit
 CREATE TABLE IF NOT EXISTS admin_sessions (session_hash VARCHAR(64) PRIMARY KEY, expires_at TIMESTAMPTZ NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
 
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS hero_image VARCHAR(255);
+
+CREATE TABLE IF NOT EXISTS graduation_rsvps (id UUID PRIMARY KEY, site_id UUID NOT NULL REFERENCES graduation_sites(id) ON DELETE CASCADE, guest_name VARCHAR(120) NOT NULL, attending BOOLEAN NOT NULL, message VARCHAR(1200) NOT NULL DEFAULT '', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+CREATE INDEX IF NOT EXISTS graduation_rsvps_site_idx ON graduation_rsvps(site_id, created_at DESC);
