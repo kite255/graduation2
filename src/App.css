@@ -81,3 +81,16 @@
 .site-header{position:sticky;top:0;z-index:100;width:100%;max-width:none;box-shadow:0 2px 14px rgba(47,34,35,.06)}
 html{scroll-padding-top:88px}
 @media(max-width:650px){html{scroll-padding-top:74px}.site-header{position:sticky;top:0}.nav{position:absolute;top:100%;left:0;right:0}}
+
+/* Refined ceremony details: compact, premium and responsive */
+.details-section{padding-top:66px;padding-bottom:72px}
+.details-section .section-heading h2{margin:12px 0 8px}
+.details-section .section-heading p{margin-bottom:0}
+.detail-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px;margin-top:30px}
+.detail-card{min-height:0;padding:28px;display:flex;align-items:flex-start;gap:17px;background:#fffdfb;border:1px solid #e9dcd6;border-radius:8px;box-shadow:0 6px 25px rgba(49,25,30,.035)}
+.detail-card .detail-icon{flex:0 0 44px;width:44px;height:44px;margin:0;background:#f6ebe7}
+.detail-copy{min-width:0}
+.detail-card .detail-number{letter-spacing:1.7px;font-size:10px}
+.detail-card h3{font-size:clamp(19px,2vw,24px);line-height:1.35;letter-spacing:-.5px;margin:10px 0 8px}
+.detail-card p{font-size:12px;line-height:1.65;margin:0}
+@media(max-width:650px){.details-section{padding-top:48px;padding-bottom:55px}.detail-grid{grid-template-columns:1fr;gap:11px;margin-top:25px}.detail-card{padding:19px;gap:14px}.detail-card h3{font-size:20px}.detail-card .detail-icon{width:40px;height:40px;flex-basis:40px}}
