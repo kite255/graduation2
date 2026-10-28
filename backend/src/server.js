@@ -515,8 +515,11 @@ app.post('/api/admin/sites/:id/music',requireAdmin,musicUpload.single('audio'),a
   }catch(err){await unlink(path.join(dir,filename)).catch(()=>{});next(err)}
 });
 app.delete('/api/admin/sites/:id/music',requireAdmin,async(req,res,next)=>{
- try{const {rows}=await pool.query('UPDATE graduation_sites SET music_file=NULL,updated_at=NOW() WHERE id=$1 RETURNING music_file',[req.params.id]);
- if(!rows.length)return res.status(404).json({message:'Graduate not found'});res.json({success:true})}catch(err){next(err)}
+ try{const {rows}=await pool.query('SELECT music_file FROM graduation_sites WHERE id=$1',[req.params.id]);
+ if(!rows.length)return res.status(404).json({message:'Graduate not found'});
+ await pool.query('UPDATE graduation_sites SET music_file=NULL,updated_at=NOW() WHERE id=$1',[req.params.id]);
+ if(rows[0].music_file)await unlink(path.join(uploadDir,'music',rows[0].music_file)).catch(()=>{});
+ res.json({success:true})}catch(err){next(err)}
 });
 app.patch('/api/admin/gallery/:id',requireAdmin,async(req,res,next)=>{
  try{
