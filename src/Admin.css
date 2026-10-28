@@ -93,3 +93,27 @@
 
 /* Keep graduate management forms readable instead of a single horizontally overflowing row. */
 .admin-site-row{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));align-items:start!important;gap:16px!important;min-width:0}.admin-site-row>*{min-width:0;max-width:100%;box-sizing:border-box}.admin-site-row input,.admin-site-row select,.admin-site-row textarea{max-width:100%;box-sizing:border-box}.admin-graduate-details,.admin-graduate-music,.admin-gift-methods{min-width:0}.admin-site-list{min-width:0}
+
+/* Graduate-focused settings workspace */
+.admin-graduate-selector{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 18px;margin:16px 0;background:#fffaf8;border:1px solid #e6d7d3;border-radius:12px}
+.admin-graduate-selector label{font-weight:700;font-size:13px;color:#532c36}.admin-graduate-selector select{flex:1;min-width:190px;max-width:390px;padding:11px 12px;background:#fff;border:1px solid #d8c5c4;border-radius:8px;color:#37272a}
+.admin-graduate-selector span{font-size:12px;color:#806f67}
+.admin-site-list{margin-top:16px}
+.admin-site-row{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:18px!important;background:transparent!important;border:0!important;padding:0!important;align-items:stretch!important}
+.admin-site-row>*{width:100%;min-width:0;max-width:none!important;box-sizing:border-box}
+.admin-site-row>.admin-graduate-identity{grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:20px 22px;border:1px solid #e9dcd6;border-radius:12px;background:#fff}
+.admin-graduate-identity strong{font-size:18px;color:#452531}.admin-graduate-identity small{font-size:12px!important;margin:0!important}.admin-graduate-identity .admin-site-link{margin-left:auto}
+.admin-site-row>.admin-graduate-details,.admin-site-row>.admin-graduate-music,.admin-site-row>.graduate-preferences,.admin-site-row>.admin-gift-editor,.admin-site-row>.admin-gift-methods,.admin-site-row>.site-rsvp-panel,.admin-site-row>.admin-hero-upload,.admin-site-row>.admin-site-actions{padding:22px!important;border:1px solid #e8d9d6!important;background:#fff!important;border-radius:12px!important;box-shadow:0 3px 12px #47242a07;margin:0!important;max-width:none!important;display:grid;align-content:start;gap:13px}
+.admin-site-row>div>strong:first-child{font-size:16px;color:#4e2933}
+.admin-site-row>.admin-site-actions{grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap}
+.admin-site-row>.admin-site-actions strong{margin-right:auto}
+.admin-site-row>.admin-hero-upload{align-items:stretch}
+.admin-hero-upload label,.admin-hero-upload input{width:100%;max-width:100%}
+.admin-site-row .admin-gift-method{grid-template-columns:1fr 1fr;gap:9px}
+.admin-site-row .admin-gift-method input:nth-child(3){grid-column:1/-1}
+.admin-site-row .admin-gift-method button{grid-column:1/-1;justify-self:start}
+.admin-site-row .graduate-visibility{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.admin-site-row input[type=file]{width:100%;font-size:12px}
+.admin-site-row .admin-graduate-fields button,.admin-site-row .admin-graduate-music>button{width:100%}
+@media(max-width:800px){.admin-site-row{grid-template-columns:minmax(0,1fr)!important}.admin-site-row>.admin-site-actions{grid-column:1}.admin-graduate-selector{align-items:stretch;flex-direction:column}.admin-graduate-selector select{max-width:none;width:100%}}
+@media(max-width:460px){.admin-site-row .graduate-visibility{grid-template-columns:1fr}.admin-site-row .admin-gift-method{grid-template-columns:1fr}.admin-site-row .admin-gift-method input:nth-child(3){grid-column:auto}.admin-graduate-identity .admin-site-link{margin-left:0}}
