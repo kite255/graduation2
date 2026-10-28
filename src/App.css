@@ -225,3 +225,10 @@ body{background:var(--ivory)}
 .wishes-load-more{display:block;margin:15px auto 0;border:1px solid #70283a;background:transparent;color:#70283a;border-radius:999px;padding:12px 25px;font-weight:700;cursor:pointer}
 .wishes-all-state{text-align:center;font-size:13px;color:#806b6d}
 @media(max-width:650px){.wishes-all-overlay{padding:0}.wishes-all-panel{height:100dvh;max-height:none;border-radius:0}.wishes-all-panel>header{padding:19px}.wishes-all-content{padding:16px}.wishes-all-panel h3{font-size:27px}.all-wish-item{padding:18px}}
+
+/* Compact event utility actions: no extra homepage section */
+.guest-quick-actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:21px;max-width:580px}
+.guest-quick-actions a,.guest-quick-actions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:39px;padding:9px 13px;background:#fffaf6;color:#70283a;border:1px solid #d8c1bd;border-radius:999px;font:700 11px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:background .2s,border-color .2s}
+.guest-quick-actions a:hover,.guest-quick-actions button:hover{background:#f0dedb;border-color:#9b6872}
+.guest-quick-actions :focus-visible{outline:3px solid #a36e78;outline-offset:3px}
+@media(max-width:650px){.guest-quick-actions{gap:8px;margin-top:17px}.guest-quick-actions a,.guest-quick-actions button{min-height:42px;padding:9px 12px;font-size:11px}}
