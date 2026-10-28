@@ -98,7 +98,7 @@ function App() {
   const calendarUrl=site?.eventDate ? (()=>{
     const date=site.eventDate.slice(0,10).replaceAll('-','')
     const next=new Date(`${site.eventDate.slice(0,10)}T00:00:00Z`)
-    if(!/^\\d{8}$/.test(date)||Number.isNaN(next.getTime()))return null
+    if(!/^\d{8}$/.test(date)||Number.isNaN(next.getTime()))return null
     next.setUTCDate(next.getUTCDate()+1)
     const end=next.toISOString().slice(0,10).replaceAll('-','')
     const qs=new URLSearchParams({action:'TEMPLATE',text:`${site.graduateName} - Graduation Celebration`,dates:`${date}/${end}`,details:`Graduation celebration. For confirmed timing, see: ${siteUrl}`,location:site.venue||'',ctz:'Africa/Dar_es_Salaam'})
