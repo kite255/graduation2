@@ -278,6 +278,12 @@ app.post('/api/sites/:slug/rsvp', limitRsvp,, async (req,res,next) => {
     res.status(201).json({success:true,message:'Thank you for responding'});
   } catch(err){next(err)}
 });
+app.get('/api/admin/sites/:id/rsvp-summary',requireAdmin,async(req,res,next)=>{
+ try {
+  const {rows}=await pool.query('SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE attending)::int AS attending, COUNT(*) FILTER (WHERE NOT attending)::int AS declined FROM graduation_rsvps WHERE site_id=$1',[req.params.id]);
+  res.json(rows[0]);
+ } catch(err){next(err)}
+});
 app.get('/api/admin/sites/:id/rsvps',requireAdmin,async(req,res,next)=>{
   try {
     const {rows}=await pool.query('SELECT id,guest_name AS "guestName",attending,message,created_at AS "createdAt" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 500',[req.params.id]);
