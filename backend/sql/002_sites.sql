@@ -38,3 +38,9 @@ ALTER TABLE gallery_images ADD COLUMN IF NOT EXISTS content_hash VARCHAR(64);
 CREATE UNIQUE INDEX IF NOT EXISTS gallery_images_site_content_hash_unique ON gallery_images(site_id,content_hash) NULLS NOT DISTINCT WHERE content_hash IS NOT NULL;
 
 ALTER TABLE gallery_images ADD COLUMN IF NOT EXISTS display_order INTEGER;
+
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS theme VARCHAR(20) NOT NULL DEFAULT 'maroon';
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS show_gallery BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS show_wishes BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS show_gifts BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS show_countdown BOOLEAN NOT NULL DEFAULT FALSE;
