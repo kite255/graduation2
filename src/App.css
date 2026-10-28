@@ -290,3 +290,12 @@ body{background:var(--ivory)}
 .rsvp-thanks h3{font:500 27px 'Playfair Display',Georgia,serif;margin:6px 0}
 .rsvp-thanks p{font-size:13px;color:#776b64}
 @media(max-width:650px){.rsvp-section{padding-top:50px;padding-bottom:52px}.rsvp-form{padding:22px 18px}}
+
+/* Balanced, shorter event details and actionable venue */
+.details-section{padding-top:56px;padding-bottom:60px}
+.details-section .detail-grid{margin-top:27px;gap:14px}
+.details-section .detail-card{padding:23px 25px;min-height:0}
+.details-section .detail-card h3{margin:7px 0 6px}
+.detail-map-link{display:inline-flex;align-items:center;gap:6px;color:var(--wine,#893e50);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;margin-top:4px}
+.detail-map-link:hover{opacity:.75}
+@media(max-width:650px){.details-section{padding-top:43px;padding-bottom:48px}.details-section .detail-grid{margin-top:23px;gap:11px}.details-section .detail-card{padding:19px}}
