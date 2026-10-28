@@ -63,16 +63,16 @@ function App() {
       <main>
         <section className="hero" id="home">
           <div className="hero-content">
-            <div className="eyebrow"><span className="eyebrow-line"/>{event.label}</div>
-            <h1>{site ? site.graduateName : 'A Journey Worth'}<br/><em>Celebrating.</em></h1>
-            <p>{site?.message || 'Every late night, every challenge, every small victory. It all led to this moment. Join us as we celebrate a remarkable milestone and the beginning of something new.'}</p>
+            <div className="eyebrow"><span className="eyebrow-line"/>{site ? "A DAY WORTH REMEMBERING" : event.label}</div>
+            <h1>{site ? site.graduateName : 'A Journey Worth'}<br/><em>{site ? 'Graduation Celebration' : 'Celebrating.'}</em></h1>
+            <p>{site?.message || 'A journey of dedication, growth and gratitude. Join us in celebrating this remarkable milestone.'}</p>
             {site?.eventDate && <p className="event-quick-date"><CalendarDays size={17}/> {new Date(site.eventDate).toLocaleDateString("en-TZ",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})}{site.venue ? ` · ${site.venue}` : ""}</p>}
             <div className="hero-actions"><a className="button primary" href={pathSlug ? "#rsvp" : "#details"}>{pathSlug ? "Confirm Attendance" : "Discover the Celebration"} <ArrowUpRight size={18}/></a><a className="text-link" href="#moments">View moments <span>↗</span></a></div>
-            <div className="hero-foot"><span className="small-dot"/> A special day. A lifetime of memories.</div>
+            <div className="hero-foot"><span className="small-dot"/> A milestone to cherish. A future to celebrate.</div>
           </div>
-          <div className="hero-visual" role="img" aria-label="Graduation celebration visual">
+          <div className="hero-visual">
             {(site?.heroImage || (!pathSlug ? "/graduation-hero.jpg" : null)) && <img key={site?.heroImage || "default-hero"} src={site?.heroImage || "/graduation-hero.jpg"} alt={site ? `${site.graduateName} graduation portrait` : "Graduation portrait"} /> }
-            <div className="hero-visual-overlay"><span>CLASS OF 2026</span><strong>The next chapter<br/>starts here.</strong></div>
+            <div className="hero-visual-overlay"><span>{site?.eventDate ? `CLASS OF ${new Date(site.eventDate).getUTCFullYear()}` : "THE GRADUATION CELEBRATION"}</span><strong>The next chapter<br/>starts here.</strong></div>
           </div>
           <span className="hero-index">01 / THE CELEBRATION</span>
         </section>
@@ -81,9 +81,9 @@ function App() {
         <section className="details-section container" id="details">
           <div className="section-heading"><span className="overline">EVERYTHING YOU NEED TO KNOW</span><h2>The celebration <em>details.</em></h2><p>All the essentials for sharing this special day with us.</p></div>
           <div className="detail-grid">
-            <article className="detail-card"><span className="detail-icon"><CalendarDays/></span><span className="detail-number">01 / DATE</span><h3>{site?.eventDate ? new Date(site.eventDate).toLocaleDateString('en-TZ', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : event.dateLabel || 'To be confirmed'}</h3><p>The date will be announced here.</p></article>
-            <article className="detail-card"><span className="detail-icon"><Clock3/></span><span className="detail-number">02 / TIME</span><h3>{site?.eventTime || event.time || 'To be confirmed'}</h3><p>The schedule will be shared here.</p></article>
-            <article className="detail-card"><span className="detail-icon"><MapPin/></span><span className="detail-number">03 / LOCATION</span><h3>{site?.venue || event.venue || 'To be confirmed'}</h3><p>Location details will be shared here.</p></article>
+            <article className="detail-card"><span className="detail-icon"><CalendarDays/></span><span className="detail-number">01 / DATE</span><h3>{site?.eventDate ? new Date(site.eventDate).toLocaleDateString('en-TZ', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : event.dateLabel || 'To be confirmed'}</h3><p>{site?.eventDate ? 'Save the date and celebrate with us.' : 'The date will be announced here.'}</p></article>
+            <article className="detail-card"><span className="detail-icon"><Clock3/></span><span className="detail-number">02 / TIME</span><h3>{site?.eventTime || event.time || 'To be confirmed'}</h3><p>{site?.eventTime ? 'We look forward to seeing you.' : 'The schedule will be shared here.'}</p></article>
+            <article className="detail-card"><span className="detail-icon"><MapPin/></span><span className="detail-number">03 / LOCATION</span><h3>{site?.venue || event.venue || 'To be confirmed'}</h3><p>{site?.venue ? 'We look forward to celebrating here.' : 'Location details will be shared here.'}</p></article>
           </div>
         </section>
 
