@@ -285,7 +285,7 @@ app.get('/api/sites/:slug/gallery', async (req, res, next) => {
   try {
     const site = await resolveSite(req, req.params.slug);
     if (!site) return res.status(404).json({message:'Website not available'});
-    const {rows} = await pool.query('SELECT id, filename, alt_text, created_at FROM gallery_images WHERE site_id=$1 ORDER BY created_at DESC LIMIT 60',[site.id]);
+    const {rows} = await pool.query('SELECT id, filename, alt_text, created_at FROM gallery_images WHERE site_id=$1 ORDER BY display_order ASC NULLS LAST, created_at DESC LIMIT 60',[site.id]);
     res.json(rows.map(image => ({id:image.id,src:'/uploads/gallery/'+encodeURIComponent(image.filename),alt:image.alt_text,createdAt:image.created_at})));
   } catch (err) { next(err); }
 });
@@ -411,7 +411,7 @@ app.get('/api/gallery', async (_req, res, next) => {
     const site = slug ? await resolveSite(_req) : null;
     if (slug && !site) return res.status(404).json({ message: 'Website not available' });
     const result = await pool.query(
-      'SELECT id, filename, alt_text, created_at FROM gallery_images WHERE site_id IS NOT DISTINCT FROM $1 ORDER BY created_at DESC LIMIT 60',
+      'SELECT id, filename, alt_text, created_at FROM gallery_images WHERE site_id IS NOT DISTINCT FROM $1 ORDER BY display_order ASC NULLS LAST, created_at DESC LIMIT 60',
       [site?.id || null]
     );
 
@@ -432,11 +432,26 @@ app.get('/api/gallery', async (_req, res, next) => {
   }
 });
 
+app.post('/api/admin/gallery/reorder',requireAdmin,async(req,res,next)=>{
+  const ids=req.body?.ids;
+  const siteId=req.body?.siteId||null;
+  if(!Array.isArray(ids)||ids.length>200||!ids.length||ids.some(id=>typeof id!=='string'||!/^[a-f\d-]{36}$/i.test(id))||new Set(ids).size!==ids.length)return res.status(400).json({message:'Invalid photo order'});
+  if(siteId && !/^[a-f\d-]{36}$/i.test(siteId))return res.status(400).json({message:'Invalid website'});
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const check=await client.query('SELECT id FROM gallery_images WHERE id=ANY($1::uuid[]) AND site_id IS NOT DISTINCT FROM $2 FOR UPDATE',[ids,siteId]);
+    if(check.rowCount!==ids.length){await client.query('ROLLBACK');return res.status(400).json({message:'Photos must belong to one gallery'})}
+    for(let i=0;i<ids.length;i++)await client.query('UPDATE gallery_images SET display_order=$1 WHERE id=$2',[i,ids[i]]);
+    await client.query('COMMIT');
+    res.json({success:true});
+  }catch(err){await client.query('ROLLBACK');next(err)}finally{client.release()}
+});
 app.get('/api/admin/gallery',requireAdmin,async(req,res,next)=>{
  try{
   const siteId=String(req.query.siteId||'');
   if(siteId && !/^[a-f\d-]{36}$/i.test(siteId))return res.status(400).json({message:'Invalid website ID'});
-  const {rows}=await pool.query('SELECT id,filename,alt_text,created_at FROM gallery_images WHERE site_id IS NOT DISTINCT FROM $1 ORDER BY created_at DESC LIMIT 200',[siteId||null]);
+  const {rows}=await pool.query('SELECT id,filename,alt_text,created_at FROM gallery_images WHERE site_id IS NOT DISTINCT FROM $1 ORDER BY display_order ASC NULLS LAST, created_at DESC LIMIT 200',[siteId||null]);
   res.json(rows.map(photo=>({id:photo.id,src:'/uploads/gallery/'+encodeURIComponent(photo.filename),alt:photo.alt_text,createdAt:photo.created_at})));
  }catch(err){next(err)}
 });
