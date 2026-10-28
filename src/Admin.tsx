@@ -38,6 +38,9 @@ export default function Admin() {
   const [siteError, setSiteError] = useState('')
   const [siteBusy, setSiteBusy] = useState(false)
   const [rsvps,setRsvps] = useState<Record<string, {guestName:string; attending:boolean|null; message:string;id:string;wishApproved:boolean}[]>>({})
+  const [editingWish,setEditingWish]=useState<string|null>(null)
+  const [wishDraft,setWishDraft]=useState('')
+  const [wishSaving,setWishSaving]=useState(false)
   const [heroFiles, setHeroFiles] = useState<Record<string, File | null>>({})
   const [heroBusy, setHeroBusy] = useState<string | null>(null)
   const [heroNotice, setHeroNotice] = useState('')
@@ -122,6 +125,19 @@ export default function Admin() {
       if(!response.ok)throw new Error('Could not update wish')
       await loadRsvps(siteId)
     }catch{setSiteError('Could not update wish')}
+  }
+
+  async function saveWish(siteId:string,wishId:string){
+    const message=wishDraft.trim()
+    if(!message||message.length>1200){setSiteError('Wish must contain 1 to 1200 characters.');return}
+    setWishSaving(true);setSiteError('')
+    try{
+      const res=await fetch(`/api/admin/sites/${siteId}/rsvps/${wishId}/message`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({message})})
+      const body=await res.json().catch(()=>({}))
+      if(!res.ok)throw new Error(body.message||'Could not save wish')
+      setRsvps(prev=>({...prev,[siteId]:(prev[siteId]||[]).map(w=>w.id===wishId?{...w,message}:w)}))
+      setEditingWish(null);setSiteNotice('Wish updated. The public website will show the new text when refreshed.')
+    }catch(err){setSiteError(err instanceof Error?err.message:'Could not save wish')}finally{setWishSaving(false)}
   }
 
   async function uploadHero(id: string) {
@@ -259,7 +275,7 @@ export default function Admin() {
           </form>}
           {siteError && <p className="admin-error" role="alert">{siteError}</p>}
           {siteNotice && <p className="admin-success" role="status">{siteNotice}</p>}{heroNotice && <p className="admin-success" role="status">{heroNotice}</p>}
-          {selectedSite && <button type="button" className="admin-small-btn" onClick={()=>setSelectedSite(null)}>Show all graduate controls</button>}<div className="admin-site-list">{sites.filter(site=>!selectedSite||site.id===selectedSite).map(site => <div className="admin-site-row" key={site.id}><div><strong>{site.graduateName}</strong><small>{site.slug} · {site.priceTzs.toLocaleString()} TZS</small><small>{site.paymentStatus} / {site.status}</small><a className="admin-site-link" href={`/s/${site.slug}`} target="_blank" rel="noopener noreferrer">Open website</a></div><div className="site-rsvp-panel"><button type="button" className="admin-small-btn" onClick={()=>void loadRsvps(site.id)}>View guest responses</button>{rsvps[site.id] && <div className="rsvp-admin-list"><p><strong>{rsvps[site.id].length} responses · {rsvps[site.id].filter(guest=>guest.attending).length} attending · {rsvps[site.id].filter(guest=>guest.attending===false).length} declined</strong></p>{rsvps[site.id].length===0?<p>No responses yet</p>:rsvps[site.id].map((guest,i)=><p key={i}><strong>{guest.guestName}</strong> · {guest.attending===null?'Wishes only':guest.attending?'Attending':'Not attending'}{guest.message&&<span> — {guest.message} {guest.wishApproved && <button type="button" className="admin-small-btn" onClick={()=>void moderateWish(site.id,guest.id,false)}>Hide wish</button>}</span>}</p>)}</div>}</div><div className="admin-hero-upload"><label>Hero portrait<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heif" onChange={e=>setHeroFiles(prev=>({...prev,[site.id]:e.target.files?.[0] || null}))}/></label><button type="button" disabled={heroBusy===site.id} onClick={()=>void uploadHero(site.id)}>{heroBusy===site.id ? "Uploading…" : "Upload hero photo"}</button></div><div className="admin-site-actions"><button type="button" onClick={() => void updateSite(site.id, { paymentStatus: site.paymentStatus === 'paid' ? 'pending' : 'paid' })}>{site.paymentStatus === 'paid' ? 'Mark unpaid' : 'Mark paid'}</button><button type="button" onClick={() => void updateSite(site.id, { status: site.status === 'active' ? 'suspended' : 'active' })}>{site.status === 'active' ? 'Suspend' : 'Activate'}</button></div></div>)}</div>
+          {selectedSite && <button type="button" className="admin-small-btn" onClick={()=>setSelectedSite(null)}>Show all graduate controls</button>}<div className="admin-site-list">{sites.filter(site=>!selectedSite||site.id===selectedSite).map(site => <div className="admin-site-row" key={site.id}><div><strong>{site.graduateName}</strong><small>{site.slug} · {site.priceTzs.toLocaleString()} TZS</small><small>{site.paymentStatus} / {site.status}</small><a className="admin-site-link" href={`/s/${site.slug}`} target="_blank" rel="noopener noreferrer">Open website</a></div><div className="site-rsvp-panel"><button type="button" className="admin-small-btn" onClick={()=>void loadRsvps(site.id)}>View guest responses</button>{rsvps[site.id] && <div className="rsvp-admin-list"><p><strong>{rsvps[site.id].length} responses · {rsvps[site.id].filter(guest=>guest.attending).length} attending · {rsvps[site.id].filter(guest=>guest.attending===false).length} declined</strong></p>{rsvps[site.id].length===0?<p>No responses yet</p>:rsvps[site.id].map((guest,i)=><p key={i}><strong>{guest.guestName}</strong> · {guest.attending===null?'Wishes only':guest.attending?'Attending':'Not attending'}{guest.message&&<div className="admin-wish-entry">{editingWish===guest.id?<div className="admin-wish-editor"><textarea aria-label="Edit guest wish" maxLength={1200} rows={4} value={wishDraft} onChange={e=>setWishDraft(e.target.value)}/><div><button type="button" disabled={wishSaving||!wishDraft.trim()} onClick={()=>void saveWish(site.id,guest.id)}>Save wish</button><button type="button" disabled={wishSaving} onClick={()=>setEditingWish(null)}>Cancel</button></div></div>:<><span>{guest.message}</span><div className="admin-wish-actions"><button type="button" className="admin-small-btn" onClick={()=>{setEditingWish(guest.id);setWishDraft(guest.message)}}>Edit wish</button>{guest.wishApproved&&<button type="button" className="admin-small-btn" onClick={()=>void moderateWish(site.id,guest.id,false)}>Hide wish</button>}</div></>}</div>}</p>)}</div>}</div><div className="admin-hero-upload"><label>Hero portrait<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heif" onChange={e=>setHeroFiles(prev=>({...prev,[site.id]:e.target.files?.[0] || null}))}/></label><button type="button" disabled={heroBusy===site.id} onClick={()=>void uploadHero(site.id)}>{heroBusy===site.id ? "Uploading…" : "Upload hero photo"}</button></div><div className="admin-site-actions"><button type="button" onClick={() => void updateSite(site.id, { paymentStatus: site.paymentStatus === 'paid' ? 'pending' : 'paid' })}>{site.paymentStatus === 'paid' ? 'Mark unpaid' : 'Mark paid'}</button><button type="button" onClick={() => void updateSite(site.id, { status: site.status === 'active' ? 'suspended' : 'active' })}>{site.status === 'active' ? 'Suspend' : 'Activate'}</button></div></div>)}</div>
         </section>
         </div>
       </div>
