@@ -311,3 +311,5 @@ body{background:var(--ivory)}
 .gifts-action{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;color:#783847;font-size:12px;font-weight:700;text-decoration:none;border-bottom:1px solid #bd9fa5;padding-bottom:5px}
 .gifts-action:hover{color:#ad5b69}
 @media(max-width:700px){.gifts-section{padding-top:0;padding-bottom:38px}.gifts-inner{flex-wrap:wrap;padding:24px;gap:13px}.gifts-icon{width:44px;height:44px;flex-basis:44px}.gifts-copy{flex-basis:calc(100% - 60px)}.gifts-action{margin-left:57px}}
+
+.gift-payment{display:flex;flex-wrap:wrap;align-items:center;gap:9px 15px;margin-top:16px}.gift-payment span{font-size:10px;letter-spacing:.8px;color:#885c64;text-transform:uppercase}.gift-payment strong{font-size:16px;color:#542f3b;letter-spacing:.3px}.gift-payment button{display:inline-flex;gap:6px;align-items:center;border:1px solid #d7b7be;border-radius:7px;background:#fff;padding:8px 11px;color:#74394a;font-size:12px;cursor:pointer}@media(max-width:700px){.gift-payment{align-items:flex-start;flex-direction:column}}
