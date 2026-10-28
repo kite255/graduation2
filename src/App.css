@@ -299,3 +299,15 @@ body{background:var(--ivory)}
 .detail-map-link{display:inline-flex;align-items:center;gap:6px;color:var(--wine,#893e50);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;margin-top:4px}
 .detail-map-link:hover{opacity:.75}
 @media(max-width:650px){.details-section{padding-top:43px;padding-bottom:48px}.details-section .detail-grid{margin-top:23px;gap:11px}.details-section .detail-card{padding:19px}}
+
+/* Gentle, non-monetary gifts invitation */
+.gifts-section{padding-top:5px;padding-bottom:50px}
+.gifts-inner{display:flex;align-items:center;gap:23px;padding:30px 34px;background:#f8f0ed;border:1px solid #ebdbd8;border-radius:16px}
+.gifts-icon{display:grid;place-items:center;flex:0 0 55px;width:55px;height:55px;background:#fff9f6;color:#813f51;border-radius:14px}
+.gifts-copy{flex:1;min-width:0}
+.gifts-copy h2{font:500 clamp(24px,2.7vw,33px)/1.25 'Playfair Display',Georgia,serif;color:#382b30;margin:7px 0}
+.gifts-copy h2 em{color:#9e5666}
+.gifts-copy p{font-size:12px;line-height:1.7;color:#77646a;max-width:630px;margin:0}
+.gifts-action{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;color:#783847;font-size:12px;font-weight:700;text-decoration:none;border-bottom:1px solid #bd9fa5;padding-bottom:5px}
+.gifts-action:hover{color:#ad5b69}
+@media(max-width:700px){.gifts-section{padding-top:0;padding-bottom:38px}.gifts-inner{flex-wrap:wrap;padding:24px;gap:13px}.gifts-icon{width:44px;height:44px;flex-basis:44px}.gifts-copy{flex-basis:calc(100% - 60px)}.gifts-action{margin-left:57px}}
