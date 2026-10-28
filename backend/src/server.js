@@ -251,14 +251,29 @@ app.get('/api/sites/:slug/gallery', async (req, res, next) => {
     res.json(rows.map(image => ({id:image.id,src:'/uploads/gallery/'+encodeURIComponent(image.filename),alt:image.alt_text,createdAt:image.created_at})));
   } catch (err) { next(err); }
 });
-app.post('/api/sites/:slug/rsvp', async (req,res,next) => {
+const rsvpTraffic = new Map();
+function limitRsvp(req,res,next) {
+  const now=Date.now();
+  const key=String(req.ip || req.socket.remoteAddress || 'unknown');
+  if(rsvpTraffic.size>10000)for(const [k,v] of rsvpTraffic)if(now-v.start>3600000)rsvpTraffic.delete(k);
+  const entry=rsvpTraffic.get(key);
+  const bucket=entry && now-entry.start<3600000 ? entry : {start:now,count:0};
+  bucket.count++;
+  rsvpTraffic.set(key,bucket);
+  if(bucket.count>20)return res.status(429).json({message:'Too many responses. Please try again later.'});
+  next();
+}
+app.post('/api/sites/:slug/rsvp', limitRsvp,, async (req,res,next) => {
   try {
     const site = await resolveSite(req,req.params.slug);
     if (!site) return res.status(404).json({message:'Website not available'});
+    if (req.body.website) return res.status(201).json({success:true});
     const name=String(req.body.name || '').trim();
     const attending=req.body.attending;
     const message=String(req.body.message || '').trim();
     if(!name || name.length>120 || typeof attending!=='boolean' || message.length>1200) return res.status(400).json({message:'Enter your name and attendance choice'});
+    const recent=await pool.query('SELECT 1 FROM graduation_rsvps WHERE site_id=$1 AND lower(guest_name)=lower($2) AND created_at>NOW()-INTERVAL \'10 minutes\' LIMIT 1',[site.id,name]);
+    if(recent.rowCount)return res.status(409).json({message:'A response with this name was recently submitted. Please try later.'});
     await pool.query('INSERT INTO graduation_rsvps(id,site_id,guest_name,attending,message) VALUES($1,$2,$3,$4,$5)',[randomUUID(),site.id,name,attending,message]);
     res.status(201).json({success:true,message:'Thank you for responding'});
   } catch(err){next(err)}
