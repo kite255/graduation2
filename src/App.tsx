@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Pause, Play, Share2, Navigation, Copy, Check, Images, Send, LockKeyhole, Gift, Camera, Heart, Globe2, ShieldCheck } from 'lucide-react'
+import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Pause, Play, Share2, Copy, Check, Images, Send, LockKeyhole, Gift, Camera, Heart, Globe2, ShieldCheck } from 'lucide-react'
 import './App.css'
 
 const platformContactUrl = 'https://wa.me/255743621712?text=Hello%2C%20I%27m%20interested%20in%20getting%20a%20graduation%20website.'
@@ -111,7 +111,6 @@ function App() {
   const siteUrl=window.location.href.split('#')[0]
   const shareMessage=site ? `Join us in celebrating ${site.graduateName}'s graduation! ${siteUrl}` : `Join our graduation celebration! ${siteUrl}`
   const whatsAppUrl=`https://wa.me/?text=${encodeURIComponent(shareMessage)}`
-  const venueUrl=site?.venue ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.venue)}` : null
   const calendarUrl=site?.eventDate ? (()=>{
     const date=site.eventDate.slice(0,10).replaceAll('-','')
     const next=new Date(`${site.eventDate.slice(0,10)}T00:00:00Z`)
