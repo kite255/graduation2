@@ -503,7 +503,11 @@ app.post('/api/admin/sites/:id/hero', requireAdmin, upload.single('image'), asyn
 const musicUpload=multer({storage:multer.memoryStorage(),limits:{fileSize:12*1024*1024,files:1}});
 app.post('/api/admin/sites/:id/music',requireAdmin,musicUpload.single('audio'),async(req,res,next)=>{
   if(!req.file)return res.status(400).json({message:'Select an MP3 audio file'});
-  if(req.file.mimetype!=='audio/mpeg'||!req.file.originalname.toLowerCase().endsWith('.mp3')||req.file.buffer.subarray(0,3).toString()!=='ID3'&&req.file.buffer[0]!==0xff)return res.status(415).json({message:'Only MP3 audio is supported'});
+  const bytes=req.file.buffer;
+  // MP3 may start with ID3v2 metadata or an MPEG audio frame; browsers also vary MIME values.
+  const id3=bytes.length>=10&&bytes.subarray(0,3).toString('ascii')==='ID3';
+  const frame=bytes.length>=4&&bytes[0]===0xff&&(bytes[1]&0xe0)===0xe0&&((bytes[1]>>1)&3)!==0&&((bytes[2]>>4)&3)!==3;
+  if(!req.file.originalname.toLowerCase().endsWith('.mp3')||!(id3||frame))return res.status(415).json({message:'This file does not appear to be a supported MP3. Please export it as MP3 and try again.'});
   const {rows}=await pool.query('SELECT music_file FROM graduation_sites WHERE id=$1',[req.params.id]);
   if(!rows.length)return res.status(404).json({message:'Graduate not found'});
   const dir=path.join(uploadDir,'music');const filename=randomUUID()+'.mp3';
