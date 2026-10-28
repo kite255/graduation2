@@ -263,7 +263,7 @@ function limitRsvp(req,res,next) {
   if(bucket.count>20)return res.status(429).json({message:'Too many responses. Please try again later.'});
   next();
 }
-app.post('/api/sites/:slug/rsvp', limitRsvp,, async (req,res,next) => {
+app.post('/api/sites/:slug/rsvp', limitRsvp, async (req,res,next) => {
   try {
     const site = await resolveSite(req,req.params.slug);
     if (!site) return res.status(404).json({message:'Website not available'});
