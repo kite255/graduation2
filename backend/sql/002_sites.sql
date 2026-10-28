@@ -24,3 +24,6 @@ CREATE TABLE IF NOT EXISTS graduation_rsvps (id UUID PRIMARY KEY, site_id UUID N
 CREATE INDEX IF NOT EXISTS graduation_rsvps_site_idx ON graduation_rsvps(site_id, created_at DESC);
 
 ALTER TABLE graduation_rsvps ADD COLUMN IF NOT EXISTS wish_approved BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Wishes-only submissions do not represent an attendance response.
+ALTER TABLE graduation_rsvps ALTER COLUMN attending DROP NOT NULL;
