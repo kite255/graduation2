@@ -27,6 +27,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [linkCopied,setLinkCopied]=useState(false)
   const [giftCopied,setGiftCopied]=useState(false)
+  const [portraitFailed,setPortraitFailed]=useState(false)
   const [guestName,setGuestName]=useState('')
   const [attending,setAttending]=useState<boolean | null>(null)
   const [wish,setWish]=useState('')
@@ -95,6 +96,7 @@ function App() {
       if (!r.ok) { setSiteUnavailable(true); return }
       const payload = await r.json()
       setSite(payload.site || null)
+      setPortraitFailed(false)
     }).catch(() => setSiteUnavailable(true))
   }, [])
   useEffect(() => {
@@ -188,7 +190,8 @@ function App() {
             <div className="hero-foot"><span className="small-dot"/> A milestone to cherish. A future to celebrate.</div>
           </div>
           <div className="hero-visual"><div className="hero-photo-frame" aria-hidden="true" />
-            {(site?.heroImage || (!pathSlug ? "/graduation-hero.jpg" : null)) && <img key={site?.heroImage || "default-hero"} src={site?.heroImage || "/graduation-hero.jpg"} alt={site ? `${site.graduateName} graduation portrait` : "Graduation portrait"} /> }
+            {(!site?.heroImage || portraitFailed) && <div className="hero-portrait-fallback" aria-hidden="true"><GraduationCap size={78} strokeWidth={1.15}/><span>CELEBRATING A NEW CHAPTER</span></div>}
+            {(site?.heroImage || (!pathSlug ? "/graduation-hero.jpg" : null)) && <img key={site?.heroImage || "default-hero"} src={site?.heroImage || "/graduation-hero.jpg"} onError={()=>setPortraitFailed(true)} style={portraitFailed?{display:"none"}:undefined} alt={site ? `${site.graduateName} graduation portrait` : "Graduation portrait"} /> }
             <div className="hero-visual-overlay"><span>{site?.eventDate ? `CLASS OF ${new Date(site.eventDate).getUTCFullYear()}` : "THE GRADUATION CELEBRATION"}</span><strong>The next chapter<br/>starts here.</strong></div>
           </div>
           <span className="hero-index">01 / THE CELEBRATION</span>
