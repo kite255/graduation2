@@ -31,7 +31,7 @@ export default function Admin() {
   const [siteNotice, setSiteNotice] = useState('')
   const [siteError, setSiteError] = useState('')
   const [siteBusy, setSiteBusy] = useState(false)
-  const [rsvps,setRsvps] = useState<Record<string, {guestName:string; attending:boolean; message:string}[]>>({})
+  const [rsvps,setRsvps] = useState<Record<string, {guestName:string; attending:boolean; message:string;id:string;wishApproved:boolean}[]>>({})
   const [heroFiles, setHeroFiles] = useState<Record<string, File | null>>({})
   const [heroBusy, setHeroBusy] = useState<string | null>(null)
   const [heroNotice, setHeroNotice] = useState('')
@@ -107,6 +107,14 @@ export default function Admin() {
       const records=await response.json()
       setRsvps(prev=>({...prev,[id]:records}))
     } catch(e){setSiteError(e instanceof Error?e.message:'Could not load responses')}
+  }
+
+  async function moderateWish(siteId:string,id:string,approved:boolean){
+    try{
+      const response=await fetch(`/api/admin/sites/${siteId}/rsvps/${id}/wish`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({approved})})
+      if(!response.ok)throw new Error('Could not update wish')
+      await loadRsvps(siteId)
+    }catch{setSiteError('Could not update wish')}
   }
 
   async function uploadHero(id: string) {
@@ -220,7 +228,7 @@ export default function Admin() {
           </form>}
           {siteError && <p className="admin-error" role="alert">{siteError}</p>}
           {siteNotice && <p className="admin-success" role="status">{siteNotice}</p>}{heroNotice && <p className="admin-success" role="status">{heroNotice}</p>}
-          {selectedSite && <button type="button" className="admin-small-btn" onClick={()=>setSelectedSite(null)}>Show all graduate controls</button>}<div className="admin-site-list">{sites.filter(site=>!selectedSite||site.id===selectedSite).map(site => <div className="admin-site-row" key={site.id}><div><strong>{site.graduateName}</strong><small>{site.slug} · {site.priceTzs.toLocaleString()} TZS</small><small>{site.paymentStatus} / {site.status}</small><a className="admin-site-link" href={`/s/${site.slug}`} target="_blank" rel="noopener noreferrer">Open website</a></div><div className="site-rsvp-panel"><button type="button" className="admin-small-btn" onClick={()=>void loadRsvps(site.id)}>View guest responses</button>{rsvps[site.id] && <div className="rsvp-admin-list"><p><strong>{rsvps[site.id].length} responses · {rsvps[site.id].filter(guest=>guest.attending).length} attending · {rsvps[site.id].filter(guest=>!guest.attending).length} declined</strong></p>{rsvps[site.id].length===0?<p>No responses yet</p>:rsvps[site.id].map((guest,i)=><p key={i}><strong>{guest.guestName}</strong> · {guest.attending?'Attending':'Not attending'}{guest.message&&<span> — {guest.message}</span>}</p>)}</div>}</div><div className="admin-hero-upload"><label>Hero portrait<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heif" onChange={e=>setHeroFiles(prev=>({...prev,[site.id]:e.target.files?.[0] || null}))}/></label><button type="button" disabled={heroBusy===site.id} onClick={()=>void uploadHero(site.id)}>{heroBusy===site.id ? "Uploading…" : "Upload hero photo"}</button></div><div className="admin-site-actions"><button type="button" onClick={() => void updateSite(site.id, { paymentStatus: site.paymentStatus === 'paid' ? 'pending' : 'paid' })}>{site.paymentStatus === 'paid' ? 'Mark unpaid' : 'Mark paid'}</button><button type="button" onClick={() => void updateSite(site.id, { status: site.status === 'active' ? 'suspended' : 'active' })}>{site.status === 'active' ? 'Suspend' : 'Activate'}</button></div></div>)}</div>
+          {selectedSite && <button type="button" className="admin-small-btn" onClick={()=>setSelectedSite(null)}>Show all graduate controls</button>}<div className="admin-site-list">{sites.filter(site=>!selectedSite||site.id===selectedSite).map(site => <div className="admin-site-row" key={site.id}><div><strong>{site.graduateName}</strong><small>{site.slug} · {site.priceTzs.toLocaleString()} TZS</small><small>{site.paymentStatus} / {site.status}</small><a className="admin-site-link" href={`/s/${site.slug}`} target="_blank" rel="noopener noreferrer">Open website</a></div><div className="site-rsvp-panel"><button type="button" className="admin-small-btn" onClick={()=>void loadRsvps(site.id)}>View guest responses</button>{rsvps[site.id] && <div className="rsvp-admin-list"><p><strong>{rsvps[site.id].length} responses · {rsvps[site.id].filter(guest=>guest.attending).length} attending · {rsvps[site.id].filter(guest=>!guest.attending).length} declined</strong></p>{rsvps[site.id].length===0?<p>No responses yet</p>:rsvps[site.id].map((guest,i)=><p key={i}><strong>{guest.guestName}</strong> · {guest.attending?'Attending':'Not attending'}{guest.message&&<span> — {guest.message} <button type="button" className="admin-small-btn" onClick={()=>void moderateWish(site.id,guest.id,!guest.wishApproved)}>{guest.wishApproved?"Unpublish wish":"Publish wish"}</button></span>}</p>)}</div>}</div><div className="admin-hero-upload"><label>Hero portrait<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heif" onChange={e=>setHeroFiles(prev=>({...prev,[site.id]:e.target.files?.[0] || null}))}/></label><button type="button" disabled={heroBusy===site.id} onClick={()=>void uploadHero(site.id)}>{heroBusy===site.id ? "Uploading…" : "Upload hero photo"}</button></div><div className="admin-site-actions"><button type="button" onClick={() => void updateSite(site.id, { paymentStatus: site.paymentStatus === 'paid' ? 'pending' : 'paid' })}>{site.paymentStatus === 'paid' ? 'Mark unpaid' : 'Mark paid'}</button><button type="button" onClick={() => void updateSite(site.id, { status: site.status === 'active' ? 'suspended' : 'active' })}>{site.status === 'active' ? 'Suspend' : 'Activate'}</button></div></div>)}</div>
         </section>
         </div>
       </div>
