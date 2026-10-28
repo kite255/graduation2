@@ -49,3 +49,6 @@ ALTER TABLE graduation_rsvps ADD COLUMN IF NOT EXISTS attendance_choice VARCHAR(
 
 -- Additional per-graduate ways to receive thoughtful gifts; legacy gift fields are preserved.
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS gift_methods JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS music_file VARCHAR(255);
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS music_section VARCHAR(24) NOT NULL DEFAULT 'hero';
