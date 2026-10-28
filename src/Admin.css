@@ -35,3 +35,22 @@
 .admin-context a{color:#742b3a;font-weight:700;text-decoration:underline}
 @media(max-width:850px){.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.admin-metrics{gap:8px}.admin-metrics>div{padding:16px}.admin-directory-item{flex-wrap:wrap}.admin-directory-meta{flex-basis:100%;order:3}.admin-toolbar>*{flex:1 1 100%}}
+
+/* Bulk gallery management */
+.admin-dropzone{border:2px dashed #d6b9bd;border-radius:15px;background:#fcf7f5;min-height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:25px;text-align:center;color:#743447}
+.admin-dropzone.dragging{background:#f4e2e6;border-color:#742b3a}
+.admin-dropzone strong{font-size:14px}.admin-dropzone span,.admin-dropzone small{font-size:11px;color:#7b6868}
+.admin-dropzone input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.admin-file-picker{display:inline-block;border-radius:999px;padding:11px 19px;background:#742b3a;color:white!important;cursor:pointer}
+.admin-upload-queue h3{font-size:14px;margin:18px 0 9px}
+.admin-upload-previews{display:grid;grid-template-columns:1fr;gap:11px;max-height:520px;overflow-y:auto}
+.admin-upload-preview{display:flex;gap:13px;border:1px solid #e5d7d1;border-radius:10px;padding:10px;background:#fff}
+.admin-upload-preview>img{width:96px;height:106px;object-fit:cover;border-radius:7px;flex-shrink:0}
+.admin-upload-preview>div{min-width:0;flex:1}.admin-upload-preview strong{display:block;font-size:11px;overflow-wrap:anywhere}
+.admin-upload-preview label{display:block;font-size:11px;margin:8px 0 4px}
+.admin-upload-preview input{padding:9px!important;font-size:12px!important}
+.admin-upload-preview button,.admin-caption-row button,.admin-caption-editor button{display:inline-flex;align-items:center;gap:5px;border:1px solid #d8c1c4;background:#fff;color:#742b3a;border-radius:6px;padding:7px 10px;font-size:11px;cursor:pointer;margin-top:7px}
+.admin-caption-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between}
+.admin-caption-row span{flex:1;min-width:110px}
+.admin-caption-editor input{width:100%;padding:9px;border:1px solid #d7c5c8;font-size:12px}
+@media(max-width:550px){.admin-upload-preview>img{width:75px;height:95px}.admin-dropzone{padding:18px}}
