@@ -96,3 +96,84 @@ html{scroll-padding-top:88px}
 @media(max-width:650px){.details-section{padding-top:48px;padding-bottom:55px}.detail-grid{grid-template-columns:1fr;gap:11px;margin-top:25px}.detail-card{padding:19px;gap:14px}.detail-card h3{font-size:20px}.detail-card .detail-icon{width:40px;height:40px;flex-basis:40px}}
 
 .wishes-section{padding-top:55px;padding-bottom:65px}.wishes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:15px;margin-top:30px}.wish-card{margin:0;background:#fff;border:1px solid #eadbd5;border-radius:8px;padding:26px}.wish-card p{font:italic 20px/1.6 'Playfair Display',Georgia,serif;color:#493337;overflow-wrap:anywhere}.wish-card footer{font-size:12px;color:#864656;font-weight:700}.wishes-empty{text-align:center;color:#87726d;font-size:13px;margin-top:26px}@media(max-width:650px){.wishes-section{padding-top:42px;padding-bottom:48px}.wish-card{padding:21px}}
+
+/* Modern graduation visual system: refined editorial luxury */
+:root{--wine:#70283a;--wine-deep:#431a2b;--rose:#a36e78;--sand:#c6a17c;--ivory:#fcf9f5;--ink:#30252a;--line:#e9ddd7}
+html{scroll-behavior:smooth}
+body{background:var(--ivory)}
+.site-shell{background:var(--ivory);color:var(--ink)}
+.site-header{height:76px;padding:0 clamp(22px,5.5vw,88px);background:rgba(252,249,245,.96);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(112,40,58,.09);box-shadow:0 4px 24px rgba(51,29,33,.035)}
+.brand-icon{border:0;background:var(--wine);color:#fff;width:43px;height:43px;border-radius:12px}
+.brand{font-size:11px;gap:11px}.brand small{font-size:8px;letter-spacing:2.6px}
+.nav{gap:clamp(15px,2.6vw,35px)}.nav>a:not(.nav-cta){transition:color .2s}.nav-cta{padding:12px 21px;border-radius:99px;box-shadow:0 7px 18px #70283a20}
+.hero{max-width:1500px;min-height:610px;grid-template-columns:51% 49%;background:radial-gradient(circle at 8% 15%,#ffffff 0%,transparent 52%),#f3eae3;isolation:isolate}
+.hero-content{padding:clamp(44px,6vw,85px) clamp(28px,5vw,80px);justify-content:center;position:relative}
+.hero-content:after{content:"";position:absolute;right:28px;top:38px;width:84px;height:84px;border:1px solid #ad7f7424;border-radius:100%;pointer-events:none}
+.eyebrow{letter-spacing:2.6px;color:#925062;font-size:10px}.eyebrow-line{width:29px}
+.hero h1{font-size:clamp(45px,5vw,78px);line-height:1.075;letter-spacing:-2.8px;max-width:660px;margin:28px 0 21px;text-wrap:balance}
+.hero h1 em{color:var(--wine);font-size:.67em;letter-spacing:-1.2px;line-height:1.2}
+.hero-content>p{font-size:14px;line-height:1.85;max-width:460px;color:#655b59}
+.event-quick-date{background:#fff9f5;border:1px solid #e4d5ce;border-left:3px solid #945466;border-radius:6px;padding:13px 15px;color:#633246!important;max-width:460px}
+.hero-actions{margin-top:25px;gap:24px}
+.hero-actions .button{border-radius:100px;padding:16px 25px;box-shadow:0 12px 25px rgba(92,34,51,.17);transition:transform .2s,box-shadow .2s}
+.hero-actions .button:hover{transform:translateY(-2px);box-shadow:0 17px 30px rgba(92,34,51,.21)}
+.text-link{border-bottom-color:#bd9f9c;padding:9px 0}
+.hero-foot{margin-top:44px;font-size:11px}
+.hero-visual{background:linear-gradient(145deg,#ae8b83,#623646);min-height:610px;overflow:hidden;isolation:isolate}
+.hero-visual>img{z-index:0;object-fit:cover;object-position:center 28%;filter:saturate(.96)}
+.hero-photo-frame{position:absolute;z-index:1;inset:20px;border:1px solid #ffffff60;pointer-events:none}
+.hero-visual-overlay{z-index:2;padding:80px clamp(28px,7%,70px) 43px;background:linear-gradient(to top,rgba(38,15,26,.85),transparent);gap:11px}
+.hero-visual-overlay span{font-size:10px;letter-spacing:3.4px;color:#f5ddd4}
+.hero-visual-overlay strong{font-size:clamp(25px,3vw,39px);letter-spacing:-.6px}
+.details-section{padding-top:86px;padding-bottom:90px}
+.section-heading .overline,.gallery-intro .overline{color:#9c6873}
+.section-heading h2,.gallery-intro h2{font-size:clamp(34px,4vw,53px);letter-spacing:-1.8px;line-height:1.22}
+.section-heading p{color:#81736f}
+.detail-grid{gap:17px;margin-top:37px}
+.detail-card{border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:0 14px 36px rgba(74,43,39,.045);padding:29px;transition:transform .2s,box-shadow .2s}
+.detail-card:hover{transform:translateY(-3px);box-shadow:0 20px 40px rgba(74,43,39,.09)}
+.detail-card .detail-icon{background:#f7edef;border-radius:13px;color:var(--wine)}
+.detail-number{color:#95676f}
+.detail-card h3{color:#3c2c31}
+.rsvp-section{background:linear-gradient(145deg,#f2e9e5,#f8f2ed);padding-top:81px;padding-bottom:86px}
+.rsvp-form{border:1px solid #eaded9;border-radius:18px;padding:34px;box-shadow:0 24px 55px #603b3b10}
+.rsvp-form input,.rsvp-form textarea{border-radius:9px;min-height:48px}
+.rsvp-choices{gap:12px}
+.rsvp-choices button{border-radius:10px;font-size:13px;transition:background .2s,border-color .2s}
+.rsvp-choices button.selected{box-shadow:0 7px 18px #70283a28}
+.rsvp-form .primary{border-radius:100px;padding:15px 26px}
+.wishes-section{padding-top:85px;padding-bottom:84px}
+.wishes-grid{gap:19px;margin-top:38px}
+.wish-card{border-radius:16px;border:1px solid #e8d9d6;padding:31px;background:#fff;box-shadow:0 10px 35px #4b29210a;position:relative}
+.wish-card:before{content:"“";position:absolute;top:8px;right:24px;font:italic 76px Georgia,serif;color:#eadbdd;line-height:1}
+.wish-card p{font-size:19px;position:relative;line-height:1.65;padding-top:14px}
+.wish-card footer{padding-top:13px;border-top:1px solid #eee3df}
+.gallery-section{padding-top:86px;padding-bottom:90px}
+.gallery-grid{gap:16px}
+.gallery-photo{border-radius:13px;overflow:hidden;box-shadow:0 12px 32px #472c2b15;min-height:250px}
+.gallery-photo img{transition:transform .5s ease}.gallery-photo:hover img{transform:scale(1.035)}
+.gallery-empty{border-radius:14px;background:#f6eeea;border-style:dashed}
+.footer{background:var(--wine-deep)}
+@media(max-width:950px){.hero{grid-template-columns:52% 48%}.hero-content{padding:50px 6%}.hero h1{font-size:clamp(40px,5vw,57px)}.hero-visual{min-height:560px}}
+@media(max-width:650px){
+ .site-header{height:68px;padding:0 20px}.nav{top:100%;padding:22px;background:#fcf9f5;box-shadow:0 18px 25px #31202214}
+ .brand-icon{width:40px;height:40px}.mobile-menu{display:grid;place-items:center;width:44px;height:44px;border-radius:10px;background:#f3e7e6}
+ .hero{display:flex;flex-direction:column;min-height:0}
+ .hero-content{padding:36px 23px 32px}
+ .hero-content:after{width:52px;height:52px;right:20px;top:22px}
+ .hero h1{font-size:clamp(40px,10.5vw,53px);letter-spacing:-1.6px;margin:22px 0 16px}
+ .hero h1 em{font-size:.68em;letter-spacing:-.7px}
+ .hero-content>p{font-size:13px;line-height:1.8}
+ .hero-actions{gap:15px;margin-top:19px}.hero-actions .button{padding:14px 19px;font-size:11px}
+ .hero-foot{margin-top:24px}
+ .hero-visual{min-height:360px;height:49svh;max-height:490px}
+ .hero-photo-frame{inset:13px}
+ .hero-visual-overlay{padding:66px 26px 27px}
+ .hero-visual-overlay strong{font-size:29px}
+ .details-section,.gallery-section,.wishes-section{padding-top:54px;padding-bottom:60px}
+ .detail-grid{margin-top:26px;gap:12px}.detail-card{padding:19px;border-radius:12px}
+ .rsvp-section{padding:58px 0}.rsvp-form{padding:23px 19px;border-radius:15px}
+ .wishes-grid{margin-top:25px}.wish-card{padding:24px;border-radius:13px}.wish-card p{font-size:18px}
+ .gallery-photo{height:285px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.detail-card,.gallery-photo img,.hero-actions .button{transition:none}}
