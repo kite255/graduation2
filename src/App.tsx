@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Pause, Play, Share2, Navigation, Copy, Check, Images, Send, LockKeyhole, Gift } from 'lucide-react'
 import './App.css'
 
+const platformContactUrl = 'https://wa.me/255743621712?text=Hello%2C%20I%27m%20interested%20in%20getting%20a%20graduation%20website.'
+
 const event = {
   label: 'THE GRADUATION CELEBRATION',
   // Replace these values with confirmed information before publishing event details.
@@ -122,7 +124,7 @@ function App() {
           <a onClick={() => setMenuOpen(false)} href="#details">Event Info</a>
           {pathSlug && <a onClick={() => setMenuOpen(false)} href="#wishes">Wishes</a>}
           <a onClick={() => setMenuOpen(false)} href="#moments">Gallery</a>
-          <a className="nav-cta" onClick={() => setMenuOpen(false)} href={pathSlug ? "#rsvp" : "#details"}>{pathSlug ? "RSVP" : "Explore Event"} <ArrowUpRight size={15}/></a>
+          <a className="nav-cta" onClick={() => setMenuOpen(false)} href={pathSlug ? "#rsvp" : platformContactUrl} {...(!pathSlug ? {target:"_blank",rel:"noopener noreferrer"} : {})}>{pathSlug ? "RSVP" : "Get Your Website"} <ArrowUpRight size={15}/></a>
         </nav>
       </header>
 
@@ -173,6 +175,7 @@ function App() {
           {showAllPhotos&&<div className="gallery-dialog-backdrop" onClick={()=>setShowAllPhotos(false)}><section className="gallery-dialog" role="dialog" aria-modal="true" aria-label="All graduation photos" onClick={e=>e.stopPropagation()}><div className="gallery-dialog-header"><div><span className="overline">PHOTO COLLECTION</span><h3>All memories <small>({galleryPhotos.length})</small></h3></div><button type="button" onClick={()=>setShowAllPhotos(false)} aria-label="Close gallery"><X size={22}/></button></div><div className="gallery-dialog-grid">{galleryPhotos.map((photo,i)=><button type="button" className="gallery-dialog-photo" key={photo.id||photo.src} onClick={()=>setActivePhoto(i)} aria-label={`Enlarge photo ${i+1}${photo.alt ? `: ${photo.alt}` : ""}`}><img loading="lazy" src={photo.src} alt={photo.alt||'Graduation memory'}/><span className="gallery-dialog-caption">{photo.alt && photo.alt !== "Graduation memory" ? photo.alt : "View photo"}</span></button>)}</div></section></div>}
           {activePhoto!==null&&galleryPhotos[activePhoto]&&<div className="photo-lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" onClick={()=>setActivePhoto(null)}><button className="photo-lightbox-close" type="button" onClick={()=>setActivePhoto(null)} aria-label="Close photo"><X size={24}/></button><button className="photo-lightbox-arrow" type="button" aria-label="Previous photo" onClick={e=>{e.stopPropagation();setActivePhoto(i=>i===null?null:(i+galleryPhotos.length-1)%galleryPhotos.length)}}><ChevronLeft size={24}/></button><figure onClick={e=>e.stopPropagation()}><img src={galleryPhotos[activePhoto].src} alt={galleryPhotos[activePhoto].alt||'Graduation memory'}/><figcaption><span className="photo-lightbox-count">{activePhoto+1} / {galleryPhotos.length}</span>{galleryPhotos[activePhoto].alt && galleryPhotos[activePhoto].alt!=="Graduation memory" && <span className="photo-lightbox-caption">{galleryPhotos[activePhoto].alt}</span>}</figcaption></figure><button className="photo-lightbox-arrow" type="button" aria-label="Next photo" onClick={e=>{e.stopPropagation();setActivePhoto(i=>i===null?null:(i+1)%galleryPhotos.length)}}><ChevronRight size={24}/></button></div>}
         </section>
+        {!pathSlug && <section className="platform-contact container" aria-labelledby="platform-contact-title"><div className="platform-contact-inner"><div><span className="overline">YOUR CELEBRATION, YOUR WEBSITE</span><h2 id="platform-contact-title">Create your own <em>graduation website.</em></h2><p>Celebrate your milestone with a personalized website, gallery, RSVP, and heartfelt wishes.</p></div><a href={platformContactUrl} target="_blank" rel="noopener noreferrer" className="platform-contact-action">Contact us on WhatsApp <ArrowUpRight size={17}/><span>0743 621 712</span></a></div></section>}
       </main>
       <footer className="footer"><div className="container footer-inner"><div className="footer-brand"><GraduationCap size={25}/><strong>THE GRADUATION</strong><span>CELEBRATION</span></div><p>Celebrating milestones. Creating memories.</p><a href="#home">Back to top</a></div><div className="container footer-bottom"><span>© 2026 Graduation Celebration. All rights reserved.</span><span>Made for a moment worth remembering.</span></div></footer>
     </div>
