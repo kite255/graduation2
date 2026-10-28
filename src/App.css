@@ -456,3 +456,14 @@ body{background:var(--ivory)}
  .site-shell:not(.platform-site) .gallery-dialog{max-height:92dvh;overflow:auto}
 }
 @media(hover:none){.gallery-photo:hover,.detail-card:hover,.platform-feature-grid article:hover{transform:none}}
+
+/* Graduate theme options share the existing editorial layout */
+.graduate-theme-forest{--graduate-accent:#355f51}
+.graduate-theme-navy{--graduate-accent:#324965}
+.graduate-theme-forest .button.primary,.graduate-theme-navy .button.primary{background:var(--graduate-accent);border-color:var(--graduate-accent)}
+.graduate-theme-forest .hero h1 em,.graduate-theme-navy .hero h1 em,
+.graduate-theme-forest .detail-map-link,.graduate-theme-navy .detail-map-link{color:var(--graduate-accent)}
+.graduate-theme-forest .guest-quick-actions a,.graduate-theme-forest .guest-quick-actions button,
+.graduate-theme-navy .guest-quick-actions a,.graduate-theme-navy .guest-quick-actions button{color:var(--graduate-accent)}
+.graduate-countdown{display:inline-flex;align-items:center;gap:9px;border:1px solid #e3cdcb;border-radius:8px;padding:9px 12px;background:#fff8f4;color:#783849;font-size:12px;font-weight:700}
+@media(max-width:650px){.graduate-countdown{font-size:11px;padding:8px 10px}}
