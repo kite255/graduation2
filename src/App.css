@@ -274,3 +274,19 @@ body{background:var(--ivory)}
 .gallery-dialog-caption{display:block;padding:11px 12px;font-size:12px;font-weight:600;line-height:1.4;color:#5b3b45;overflow-wrap:anywhere}
 .gallery-dialog-photo:focus-visible{outline:3px solid #955260;outline-offset:2px}
 @media(max-width:650px){.gallery-dialog-caption{padding:9px;font-size:11px}}
+
+/* Compact RSVP and optional wishes flow */
+.rsvp-section{padding-top:65px;padding-bottom:70px}
+.rsvp-form{gap:10px;padding:28px;max-width:550px}
+.rsvp-form label,.rsvp-label{display:block;margin-top:6px}
+.rsvp-form label small,.rsvp-label small{font-size:11px;color:#8b7b79;font-weight:400}
+.rsvp-choices{margin-bottom:7px}
+.rsvp-choices button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px}
+.rsvp-privacy{display:flex;align-items:flex-start;gap:8px;margin:5px 0;font-size:11px;line-height:1.6}
+.rsvp-privacy svg{flex-shrink:0}
+.rsvp-form .primary{justify-content:center;margin-top:6px}
+.rsvp-thanks{align-items:center;text-align:center;padding:42px 28px}
+.rsvp-thanks>svg{color:#742b3a}
+.rsvp-thanks h3{font:500 27px 'Playfair Display',Georgia,serif;margin:6px 0}
+.rsvp-thanks p{font-size:13px;color:#776b64}
+@media(max-width:650px){.rsvp-section{padding-top:50px;padding-bottom:52px}.rsvp-form{padding:22px 18px}}
