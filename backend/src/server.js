@@ -278,6 +278,22 @@ app.post('/api/sites/:slug/rsvp', limitRsvp, async (req,res,next) => {
     res.status(201).json({success:true,message:'Thank you for responding'});
   } catch(err){next(err)}
 });
+app.get('/api/sites/:slug/wishes',async(req,res,next)=>{
+ try{
+  const site=await resolveSite(req,req.params.slug);
+  if(!site)return res.status(404).json({message:'Website not available'});
+  const {rows}=await pool.query("SELECT guest_name AS \"guestName\",message,created_at AS \"createdAt\" FROM graduation_rsvps WHERE site_id=$1 AND wish_approved=TRUE AND message<>'' ORDER BY created_at DESC LIMIT 100",[site.id]);
+  res.json(rows);
+ }catch(err){next(err)}
+});
+app.patch('/api/admin/sites/:id/rsvps/:rsvpId/wish',requireAdmin,async(req,res,next)=>{
+ try{
+  if(typeof req.body.approved!=='boolean')return res.status(400).json({message:'Invalid moderation choice'});
+  const result=await pool.query('UPDATE graduation_rsvps SET wish_approved=$1 WHERE id=$2 AND site_id=$3 AND message<>\'\' RETURNING id',[req.body.approved,req.params.rsvpId,req.params.id]);
+  if(!result.rowCount)return res.status(404).json({message:'Wish not found'});
+  res.json({success:true});
+ }catch(err){next(err)}
+});
 app.get('/api/admin/sites/:id/rsvp-summary',requireAdmin,async(req,res,next)=>{
  try {
   const {rows}=await pool.query('SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE attending)::int AS attending, COUNT(*) FILTER (WHERE NOT attending)::int AS declined FROM graduation_rsvps WHERE site_id=$1',[req.params.id]);
@@ -286,7 +302,7 @@ app.get('/api/admin/sites/:id/rsvp-summary',requireAdmin,async(req,res,next)=>{
 });
 app.get('/api/admin/sites/:id/rsvps',requireAdmin,async(req,res,next)=>{
   try {
-    const {rows}=await pool.query('SELECT id,guest_name AS "guestName",attending,message,created_at AS "createdAt" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 500',[req.params.id]);
+    const {rows}=await pool.query('SELECT id,guest_name AS "guestName",attending,message,wish_approved AS "wishApproved",created_at AS "createdAt" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 500',[req.params.id]);
     res.json(rows);
   } catch(err){next(err)}
 });
