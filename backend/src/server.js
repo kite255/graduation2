@@ -292,7 +292,7 @@ app.get('/api/admin/sites/:id/rsvps',requireAdmin,async(req,res,next)=>{
 });
 app.get('/api/admin/sites', requireAdmin, async (_req, res, next) => {
   try {
-    const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, message, hero_image AS "heroImageFilename", status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt" FROM graduation_sites ORDER BY created_at DESC');
+    const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, message, hero_image AS "heroImageFilename", status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt", (SELECT COUNT(*)::int FROM graduation_rsvps r WHERE r.site_id = graduation_sites.id) AS "rsvpCount", (SELECT COUNT(*)::int FROM gallery_images g WHERE g.site_id = graduation_sites.id) AS "photoCount" FROM graduation_sites ORDER BY created_at DESC');
     res.json(rows);
   } catch (err) { next(err); }
 });
