@@ -34,6 +34,11 @@ function App() {
   const [wishesLoading,setWishesLoading]=useState(false)
   const [expandedWishes,setExpandedWishes]=useState<number[]>([])
   const [wishIndex,setWishIndex]=useState(0)
+  const [viewAllWishes,setViewAllWishes]=useState(false)
+  const [allWishes,setAllWishes]=useState<Wish[]>([])
+  const [allWishesPage,setAllWishesPage]=useState(0)
+  const [allWishesLoading,setAllWishesLoading]=useState(false)
+  const [allWishesError,setAllWishesError]=useState('')
   const [wishPaused,setWishPaused]=useState(false)
   const [wishHover,setWishHover]=useState(false)
   const [reducedMotion,setReducedMotion]=useState(false)
@@ -51,6 +56,20 @@ function App() {
       .finally(()=>{if(!controller.signal.aborted)setWishesLoading(false)})
     return ()=>controller.abort()
   },[pathSlug,wishPage])
+  useEffect(()=>{
+    if(!viewAllWishes||!pathSlug||allWishesPage<1)return
+    const controller=new AbortController()
+    setAllWishesLoading(true)
+    setAllWishesError('')
+    fetch(`/api/sites/${pathSlug}/wishes?page=${allWishesPage}`,{signal:controller.signal})
+      .then(r=>{if(!r.ok)throw new Error('Unable to load wishes');return r.json()})
+      .then(data=>{if(Array.isArray(data.items))setAllWishes(prev=>allWishesPage===1?data.items:[...prev,...data.items]);else throw new Error('Invalid response')})
+      .catch(err=>{if(!controller.signal.aborted)setAllWishesError(err instanceof Error?err.message:'Unable to load wishes')})
+      .finally(()=>{if(!controller.signal.aborted)setAllWishesLoading(false)})
+    return ()=>controller.abort()
+  },[viewAllWishes,pathSlug,allWishesPage])
+  function openAllWishes(){setViewAllWishes(true);setWishPaused(true);if(allWishesPage===0)setAllWishesPage(1)}
+  function closeAllWishes(){setViewAllWishes(false);setWishPaused(false)}
   const [gallery, setGallery] = useState<GalleryImage[]>([])
   const [galleryError, setGalleryError] = useState(false)
   const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null; heroImage: string | null } | null>(null)
@@ -120,6 +139,8 @@ function App() {
             <div className="wishes-slider-viewport"><div className="wishes-slider-track" style={{transform:`translateX(-${wishIndex*100}%)`}}>{publicWishes.map((w,i)=><div className="wish-slide" key={w.createdAt+w.guestName+i}><blockquote className="wish-card"><p>{expandedWishes.includes(i)||w.message.length<=230?w.message:w.message.slice(0,230).trimEnd()+'…'}</p>{w.message.length>230&&<button type="button" className="wish-expand" onClick={()=>setExpandedWishes(prev=>prev.includes(i)?prev.filter(x=>x!==i):[...prev,i])}>{expandedWishes.includes(i)?'Read less':'Read more'}</button>}<footer>{w.guestName}</footer></blockquote></div>)}</div></div>
             <div className="wishes-controls"><div className="wishes-counter">{wishIndex+1} of {publicWishes.length} on this page</div><div className="wishes-control-buttons"><button type="button" aria-label="Previous wish" onClick={()=>setWishIndex(i=>(i+publicWishes.length-1)%publicWishes.length)}><ChevronLeft size={18}/></button><button type="button" aria-label={wishPaused?'Resume automatic wishes':'Pause automatic wishes'} onClick={()=>setWishPaused(v=>!v)}>{wishPaused?<Play size={17}/>:<Pause size={17}/>}</button><button type="button" aria-label="Next wish" onClick={()=>setWishIndex(i=>(i+1)%publicWishes.length)}><ChevronRight size={18}/></button></div></div>
           </div>:<p className="wishes-empty">{wishesLoading?'Loading wishes…':'Be the first to share your congratulations.'}</p>}
+          {wishTotal>0&&<div className="wishes-view-all"><button type="button" onClick={openAllWishes}>View all {wishTotal} wishes <ArrowUpRight size={16}/></button></div>}
+          {viewAllWishes&&<div className="wishes-all-overlay" role="presentation" onClick={closeAllWishes}><section className="wishes-all-panel" role="dialog" aria-modal="true" aria-label="All graduation wishes" onClick={e=>e.stopPropagation()}><header><div><span className="overline">MESSAGES OF CELEBRATION</span><h3>All wishes <small>({wishTotal})</small></h3></div><button type="button" aria-label="Close all wishes" onClick={closeAllWishes}><X size={21}/></button></header><div className="wishes-all-content">{allWishes.map((w,i)=><article className="all-wish-item" key={w.createdAt+w.guestName+i}><p>{w.message}</p><strong>{w.guestName}</strong></article>)}{allWishesLoading&&<p className="wishes-all-state" role="status">Loading wishes…</p>}{allWishesError&&<p className="wishes-all-state" role="alert">{allWishesError} <button type="button" onClick={()=>{setAllWishesPage(0);setAllWishes([]);setTimeout(()=>setAllWishesPage(1),0)}}>Try again</button></p>}{!allWishesLoading&&!allWishesError&&allWishesPage<wishPages&&<button className="wishes-load-more" type="button" onClick={()=>setAllWishesPage(p=>p+1)}>Load more wishes</button>}</div></section></div>}
           {wishPages>1&&<div className="wishes-pagination"><button type="button" disabled={wishPage===1||wishesLoading} onClick={()=>setWishPage(p=>p-1)}>Older page</button><span>Page {wishPage} of {wishPages}</span><button type="button" disabled={wishPage>=wishPages||wishesLoading} onClick={()=>setWishPage(p=>p+1)}>More wishes</button></div>}
         </section>}
                 <section className="gallery-section container" id="moments"><div className="gallery-intro"><div><span className="overline">OUR FAVORITE MEMORIES</span><h2>Moments that <em>matter.</em></h2></div><p>A glimpse into the journey. Photos will appear here as they're added.</p></div><div className="gallery-grid">{gallery.map(photo => <div className="gallery-photo" key={photo.id || photo.src}><img loading="lazy" src={photo.src} alt={photo.alt || "Graduation memory"} /></div>)}</div>{gallery.length === 0 && <div className="gallery-empty" role="status"><GraduationCap size={30}/><strong>{galleryError ? "Gallery temporarily unavailable" : "Memories are coming soon"}</strong><p>{galleryError ? "Please check back shortly." : "Photos will appear here once they are added."}</p></div>}</section>
