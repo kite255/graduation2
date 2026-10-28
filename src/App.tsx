@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
+import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Pause, Play, Share2, Navigation, Copy, Check } from 'lucide-react'
 import './App.css'
 
 const event = {
@@ -16,6 +16,7 @@ type GalleryImage = { id?: string; src: string; alt: string }
 function App() {
   const pathSlug = window.location.pathname.match(/^\/s\/([a-z0-9-]+)\/?$/)?.[1] || null
   const [menuOpen, setMenuOpen] = useState(false)
+  const [linkCopied,setLinkCopied]=useState(false)
   const [guestName,setGuestName]=useState('')
   const [attending,setAttending]=useState<boolean | null>(null)
   const [wish,setWish]=useState('')
@@ -90,6 +91,20 @@ function App() {
       })
       .catch(() => setGalleryError(true))
   }, [])
+  const siteUrl=window.location.href.split('#')[0]
+  const shareMessage=site ? `Join us in celebrating ${site.graduateName}'s graduation! ${siteUrl}` : `Join our graduation celebration! ${siteUrl}`
+  const whatsAppUrl=`https://wa.me/?text=${encodeURIComponent(shareMessage)}`
+  const venueUrl=site?.venue ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.venue)}` : null
+  const calendarUrl=site?.eventDate ? (()=>{
+    const date=site.eventDate.slice(0,10).replaceAll('-','')
+    const next=new Date(`${site.eventDate.slice(0,10)}T00:00:00Z`)
+    if(!/^\\d{8}$/.test(date)||Number.isNaN(next.getTime()))return null
+    next.setUTCDate(next.getUTCDate()+1)
+    const end=next.toISOString().slice(0,10).replaceAll('-','')
+    const qs=new URLSearchParams({action:'TEMPLATE',text:`${site.graduateName} - Graduation Celebration`,dates:`${date}/${end}`,details:`Graduation celebration. For confirmed timing, see: ${siteUrl}`,location:site.venue||'',ctz:'Africa/Dar_es_Salaam'})
+    return `https://calendar.google.com/calendar/render?${qs.toString()}`
+  })() : null
+  async function copySiteLink(){try{await navigator.clipboard.writeText(siteUrl);setLinkCopied(true);window.setTimeout(()=>setLinkCopied(false),2200)}catch{setLinkCopied(false)}}
   if (siteUnavailable) return <div className="site-unavailable"><GraduationCap size={44}/><h1>This graduation website is not available.</h1><p>Please contact the organizer.</p></div>
   return (
     <div className="site-shell">
@@ -113,6 +128,7 @@ function App() {
             <p>{site?.message || 'A journey of dedication, growth and gratitude. Join us in celebrating this remarkable milestone.'}</p>
             {site?.eventDate && <p className="event-quick-date"><CalendarDays size={17}/> {new Date(site.eventDate).toLocaleDateString("en-TZ",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})}{site.venue ? ` · ${site.venue}` : ""}</p>}
             <div className="hero-actions"><a className="button primary" href={pathSlug ? "#rsvp" : "#details"}>{pathSlug ? "Confirm Attendance" : "Discover the Celebration"} <ArrowUpRight size={18}/></a><a className="text-link" href="#moments">View moments</a></div>
+            {pathSlug && site && <div className="guest-quick-actions" aria-label="Share and event tools"><a href={whatsAppUrl} target="_blank" rel="noopener noreferrer"><Share2 size={17}/> Share on WhatsApp</a><button type="button" onClick={()=>void copySiteLink()}>{linkCopied?<Check size={17}/>:<Copy size={17}/>} {linkCopied?'Link copied':'Copy link'}</button>{calendarUrl&&<a href={calendarUrl} target="_blank" rel="noopener noreferrer"><CalendarDays size={17}/> Add to calendar</a>}{venueUrl&&<a href={venueUrl} target="_blank" rel="noopener noreferrer"><Navigation size={17}/> Directions</a>}</div>}
             <div className="hero-foot"><span className="small-dot"/> A milestone to cherish. A future to celebrate.</div>
           </div>
           <div className="hero-visual"><div className="hero-photo-frame" aria-hidden="true" />
