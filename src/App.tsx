@@ -96,9 +96,15 @@ function App() {
   const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null; heroImage: string | null; giftPhone:string|null;giftName:string|null;giftProvider:string|null;giftMethods?:{provider:string;account:string;name:string}[];musicFile?:string|null;musicSection?:string;theme?:string;showGallery?:boolean;showWishes?:boolean;showGifts?:boolean;showCountdown?:boolean } | null>(null)
   useEffect(()=>{
     if(!site?.musicFile||!musicEnabled)return
-    const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(visible)setCurrentSection(visible.target.id)},{threshold:[.1,.3,.5,.7]})
-    document.querySelectorAll('#home,#details,#moments,#rsvp,#wishes,#gifts').forEach(node=>observer.observe(node))
-    return ()=>observer.disconnect()
+    const sections=['home','details','moments','rsvp','wishes','gifts']
+    const update=()=>{
+      const center=window.innerHeight*.45
+      const active=sections.find(id=>{const rect=document.getElementById(id)?.getBoundingClientRect();return rect&&rect.top<=center&&rect.bottom>=center})
+      if(active)setCurrentSection(active==='home'?'hero':active)
+      else setCurrentSection('')
+    }
+    update();window.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update)
+    return ()=>{window.removeEventListener('scroll',update);window.removeEventListener('resize',update)}
   },[site?.musicFile,musicEnabled])
   useEffect(()=>{
     const player=musicRef.current;if(!player)return
