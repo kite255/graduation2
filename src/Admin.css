@@ -54,3 +54,5 @@
 .admin-caption-row span{flex:1;min-width:110px}
 .admin-caption-editor input{width:100%;padding:9px;border:1px solid #d7c5c8;font-size:12px}
 @media(max-width:550px){.admin-upload-preview>img{width:75px;height:95px}.admin-dropzone{padding:18px}}
+
+.admin-caption-row .admin-delete-photo{color:#a02e39;border-color:#edc7cd}.admin-caption-row .admin-delete-photo:hover{background:#fff0f1}.admin-caption-row button:disabled{opacity:.5;cursor:not-allowed}
