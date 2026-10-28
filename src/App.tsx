@@ -94,13 +94,14 @@ function App() {
   const [countdownNow,setCountdownNow]=useState(Date.now())
   useEffect(()=>{
     if(!site?.showCountdown||!site.eventDate)return
-    const id=window.setInterval(()=>setCountdownNow(Date.now()),60000)
+    const id=window.setInterval(()=>setCountdownNow(Date.now()),1000)
     return ()=>window.clearInterval(id)
   },[site?.showCountdown,site?.eventDate])
   const ceremonyDay=site?.eventDate?.slice(0,10)
   // Graduation dates are shown in Tanzania's local time.
   const countdownTarget=ceremonyDay?new Date(`${ceremonyDay}T00:00:00+03:00`).getTime():NaN
-  const daysRemaining=Number.isFinite(countdownTarget)?Math.ceil((countdownTarget-countdownNow)/86400000):0
+  const secondsRemaining=Number.isFinite(countdownTarget)?Math.max(0,Math.floor((countdownTarget-countdownNow)/1000)):0
+  const countdownParts=[{label:'Days',value:Math.floor(secondsRemaining/86400)},{label:'Hours',value:Math.floor(secondsRemaining%86400/3600)},{label:'Minutes',value:Math.floor(secondsRemaining%3600/60)},{label:'Seconds',value:secondsRemaining%60}]
   const [siteUnavailable, setSiteUnavailable] = useState(false)
   useEffect(() => {
     fetch(pathSlug ? `/api/sites/${pathSlug}` : '/api/site').then(async r => {
@@ -214,7 +215,7 @@ function App() {
             <h1>{site ? site.graduateName : 'A Journey Worth'}<br/><em>{site ? 'Graduation Celebration' : 'Celebrating.'}</em></h1>
             <p>{site?.message || 'A journey of dedication, growth and gratitude. Join us in celebrating this remarkable milestone.'}</p>
             {site?.eventDate && <p className="event-quick-date"><CalendarDays size={17}/> {new Date(site.eventDate).toLocaleDateString("en-TZ",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})}{site.venue ? ` · ${site.venue}` : ""}</p>}
-            {site?.showCountdown&&daysRemaining>0&&<p className="graduate-countdown" role="status"><CalendarDays size={16}/> {daysRemaining} {daysRemaining===1?'day':'days'} until the celebration</p>}
+            {site?.showCountdown&&secondsRemaining>0&&<div className="graduate-countdown" aria-label="Time until graduation"><span className="graduate-countdown-title">COUNTDOWN TO THE CELEBRATION</span><div className="graduate-countdown-grid">{countdownParts.map(part=><div className="graduate-countdown-unit" key={part.label}><strong>{String(part.value).padStart(2,'0')}</strong><span>{part.label}</span></div>)}</div></div>}
             <div className="hero-actions"><a className="button primary" href={pathSlug ? "#rsvp" : "#details"}>{pathSlug ? "Confirm Attendance" : "Discover the Celebration"} <ArrowUpRight size={18}/></a><a className="text-link" href="#moments">View moments</a></div>
             {pathSlug && site && <div className="guest-quick-actions" aria-label="Share and event tools"><a href={whatsAppUrl} target="_blank" rel="noopener noreferrer"><Share2 size={17}/> Share Invitation</a><button type="button" onClick={()=>void copySiteLink()}>{linkCopied?<Check size={17}/>:<Copy size={17}/>} {linkCopied?'Link copied':'Copy Link'}</button></div>}
             <div className="hero-foot"><span className="small-dot"/> A milestone to cherish. A future to celebrate.</div>
