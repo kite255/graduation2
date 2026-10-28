@@ -91,6 +91,16 @@ function App() {
   const galleryPhotos=gallery.filter((photo,index,all)=>all.findIndex(item=>item.src===photo.src)===index)
   useEffect(()=>{if(activePhoto===null&&!showAllPhotos)return;function onKey(e:KeyboardEvent){if(e.key==='Escape'){setActivePhoto(null);setShowAllPhotos(false)}else if(activePhoto!==null&&e.key==='ArrowRight')setActivePhoto(i=>i===null?null:(i+1)%galleryPhotos.length);else if(activePhoto!==null&&e.key==='ArrowLeft')setActivePhoto(i=>i===null?null:(i+galleryPhotos.length-1)%galleryPhotos.length)}window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey)},[activePhoto,showAllPhotos,galleryPhotos.length])
   const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null; heroImage: string | null; giftPhone:string|null;giftName:string|null;giftProvider:string|null;theme?:string;showGallery?:boolean;showWishes?:boolean;showGifts?:boolean;showCountdown?:boolean } | null>(null)
+  const [countdownNow,setCountdownNow]=useState(Date.now())
+  useEffect(()=>{
+    if(!site?.showCountdown||!site.eventDate)return
+    const id=window.setInterval(()=>setCountdownNow(Date.now()),60000)
+    return ()=>window.clearInterval(id)
+  },[site?.showCountdown,site?.eventDate])
+  const ceremonyDay=site?.eventDate?.slice(0,10)
+  // Graduation dates are shown in Tanzania's local time.
+  const countdownTarget=ceremonyDay?new Date(`${ceremonyDay}T00:00:00+03:00`).getTime():NaN
+  const daysRemaining=Number.isFinite(countdownTarget)?Math.ceil((countdownTarget-countdownNow)/86400000):0
   const [siteUnavailable, setSiteUnavailable] = useState(false)
   useEffect(() => {
     fetch(pathSlug ? `/api/sites/${pathSlug}` : '/api/site').then(async r => {
@@ -204,6 +214,7 @@ function App() {
             <h1>{site ? site.graduateName : 'A Journey Worth'}<br/><em>{site ? 'Graduation Celebration' : 'Celebrating.'}</em></h1>
             <p>{site?.message || 'A journey of dedication, growth and gratitude. Join us in celebrating this remarkable milestone.'}</p>
             {site?.eventDate && <p className="event-quick-date"><CalendarDays size={17}/> {new Date(site.eventDate).toLocaleDateString("en-TZ",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})}{site.venue ? ` · ${site.venue}` : ""}</p>}
+            {site?.showCountdown&&daysRemaining>0&&<p className="graduate-countdown" role="status"><CalendarDays size={16}/> {daysRemaining} {daysRemaining===1?'day':'days'} until the celebration</p>}
             <div className="hero-actions"><a className="button primary" href={pathSlug ? "#rsvp" : "#details"}>{pathSlug ? "Confirm Attendance" : "Discover the Celebration"} <ArrowUpRight size={18}/></a><a className="text-link" href="#moments">View moments</a></div>
             {pathSlug && site && <div className="guest-quick-actions" aria-label="Share and event tools"><a href={whatsAppUrl} target="_blank" rel="noopener noreferrer"><Share2 size={17}/> Share Invitation</a><button type="button" onClick={()=>void copySiteLink()}>{linkCopied?<Check size={17}/>:<Copy size={17}/>} {linkCopied?'Link copied':'Copy Link'}</button></div>}
             <div className="hero-foot"><span className="small-dot"/> A milestone to cherish. A future to celebrate.</div>
