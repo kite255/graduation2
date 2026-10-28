@@ -338,7 +338,7 @@ app.post('/api/admin/sites', requireAdmin, async (req, res, next) => {
     }
     if (priceTzs != null && (!Number.isSafeInteger(Number(priceTzs)) || Number(priceTzs) < 0)) return res.status(400).json({message:'Invalid price'});
     const result = await pool.query(`INSERT INTO graduation_sites(id, slug, graduate_name, event_date, event_time, venue, message, price_tzs, gift_phone, gift_name, gift_provider)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id,slug,status`,
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id,slug,status`,
       [randomUUID(), cleanSlug, cleanName, eventDate || null, String(eventTime || '').slice(0,100), String(venue || '').slice(0,240), String(message || '').slice(0,3000), Number(priceTzs || 0),String(giftPhone||'').trim()||null,String(giftName||'').trim().slice(0,120)||null,String(giftProvider||'').trim().slice(0,50)||null]);
     res.status(201).json(result.rows[0]);
   } catch (err) {
