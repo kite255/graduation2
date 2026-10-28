@@ -282,8 +282,13 @@ app.get('/api/sites/:slug/wishes',async(req,res,next)=>{
  try{
   const site=await resolveSite(req,req.params.slug);
   if(!site)return res.status(404).json({message:'Website not available'});
-  const {rows}=await pool.query("SELECT guest_name AS \"guestName\",message,created_at AS \"createdAt\" FROM graduation_rsvps WHERE site_id=$1 AND wish_approved=TRUE AND message<>'' ORDER BY created_at DESC LIMIT 100",[site.id]);
-  res.json(rows);
+  const page=Math.max(1,Math.min(100000,Number.parseInt(String(req.query.page||'1'),10)||1));
+  const limit=3;
+  const offset=(page-1)*limit;
+  const countResult=await pool.query("SELECT COUNT(*)::int AS total FROM graduation_rsvps WHERE site_id=$1 AND wish_approved=TRUE AND message<>''",[site.id]);
+  const total=countResult.rows[0].total;
+  const {rows}=await pool.query("SELECT guest_name AS \"guestName\",message,created_at AS \"createdAt\" FROM graduation_rsvps WHERE site_id=$1 AND wish_approved=TRUE AND message<>'' ORDER BY created_at DESC,id DESC LIMIT $2 OFFSET $3",[site.id,limit,offset]);
+  res.json({items:rows,page,total,totalPages:Math.ceil(total/limit)});
  }catch(err){next(err)}
 });
 app.patch('/api/admin/sites/:id/rsvps/:rsvpId/wish',requireAdmin,async(req,res,next)=>{
