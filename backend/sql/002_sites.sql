@@ -27,3 +27,8 @@ ALTER TABLE graduation_rsvps ADD COLUMN IF NOT EXISTS wish_approved BOOLEAN NOT 
 
 -- Wishes-only submissions do not represent an attendance response.
 ALTER TABLE graduation_rsvps ALTER COLUMN attending DROP NOT NULL;
+
+-- Optional, per-graduate gift contact details (no payment processing or tracking).
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS gift_phone VARCHAR(24);
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS gift_name VARCHAR(120);
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS gift_provider VARCHAR(50);
