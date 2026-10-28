@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Pause, Play, Share2, Navigation, Copy, Check, Images, Send, LockKeyhole, Gift } from 'lucide-react'
+import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Pause, Play, Share2, Navigation, Copy, Check, Images, Send, LockKeyhole, Gift, Camera, Heart, Globe2, ShieldCheck } from 'lucide-react'
 import './App.css'
 
 const platformContactUrl = 'https://wa.me/255743621712?text=Hello%2C%20I%27m%20interested%20in%20getting%20a%20graduation%20website.'
@@ -120,6 +120,47 @@ function App() {
     return `https://calendar.google.com/calendar/render?${qs.toString()}`
   })() : null
   async function copySiteLink(){try{await navigator.clipboard.writeText(siteUrl);setLinkCopied(true);window.setTimeout(()=>setLinkCopied(false),2200)}catch{setLinkCopied(false)}}
+  if (!pathSlug) return (
+    <div className="site-shell platform-site">
+      <header className="site-header">
+        <a className="brand" href="#home" aria-label="Graduation websites home"><span className="brand-icon"><GraduationCap size={23}/></span><span>THE <strong>GRADUATION</strong><small>CELEBRATION</small></span></a>
+        <button className="mobile-menu" onClick={()=>setMenuOpen(v=>!v)} aria-label="Toggle menu" aria-expanded={menuOpen}>{menuOpen?<X/>:<Menu/>}</button>
+        <nav className={menuOpen?'nav open':'nav'} aria-label="Main navigation">
+          <a href="#features" onClick={()=>setMenuOpen(false)}>Features</a>
+          <a href="#how-it-works" onClick={()=>setMenuOpen(false)}>How it works</a>
+          <a href="#contact" onClick={()=>setMenuOpen(false)}>Contact</a>
+          <a className="nav-cta" href={platformContactUrl} target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}>Get Your Website <ArrowUpRight size={15}/></a>
+        </nav>
+      </header>
+      <main>
+        <section className="platform-hero" id="home">
+          <div className="platform-hero-copy">
+            <span className="overline">PERSONALIZED GRADUATION WEBSITES</span>
+            <h1>Your milestone.<br/><em>Your story.</em><br/>Beautifully told.</h1>
+            <p>Turn your graduation into a beautiful online celebration. Share your moments, invite your loved ones, and collect heartfelt wishes—all in one personal website.</p>
+            <div className="platform-hero-actions"><a className="button primary" href={platformContactUrl} target="_blank" rel="noopener noreferrer">Get Your Graduation Website <ArrowUpRight size={17}/></a><a className="platform-secondary-link" href="#features">Explore features <ArrowUpRight size={15}/></a></div>
+            <div className="platform-trust"><span><Check size={15}/> Personalized for you</span><span><Check size={15}/> Easy to share</span><span><Check size={15}/> Mobile-friendly</span></div>
+          </div>
+          <div className="platform-hero-art"><img src="/graduation-hero.jpg" alt="Graduation celebration portrait"/><div className="platform-art-note"><span>A MOMENT TO REMEMBER</span><strong>Every achievement<br/>deserves a celebration.</strong></div></div>
+        </section>
+        <section className="platform-features container" id="features">
+          <div className="section-heading"><span className="overline">THOUGHTFULLY DESIGNED</span><h2>Everything you need, <em>beautifully simple.</em></h2><p>One memorable link to bring your graduation celebration together.</p></div>
+          <div className="platform-feature-grid">
+            <article><span className="platform-feature-icon"><Globe2 size={23}/></span><h3>Your own website</h3><p>A personalized space for your name, story, and special day.</p></article>
+            <article><span className="platform-feature-icon"><Camera size={23}/></span><h3>Photo gallery</h3><p>Showcase favorite memories with thoughtful photo captions.</p></article>
+            <article><span className="platform-feature-icon"><CalendarDays size={23}/></span><h3>Guest RSVP</h3><p>Make it easy for loved ones to confirm attendance.</p></article>
+            <article><span className="platform-feature-icon"><Heart size={23}/></span><h3>Heartfelt wishes</h3><p>Collect messages of love and congratulations in one place.</p></article>
+          </div>
+        </section>
+        <section className="platform-process container" id="how-it-works">
+          <div><span className="overline">SIMPLE FROM THE START</span><h2>From your story<br/>to your <em>celebration.</em></h2><p>No complicated setup for you or your guests.</p></div>
+          <div className="platform-steps"><div><span>01</span><strong>Get in touch</strong><p>Tell us about your graduation and the details you'd like to share.</p></div><div><span>02</span><strong>Make it yours</strong><p>We prepare your personalized website with your photos and event information.</p></div><div><span>03</span><strong>Share the moment</strong><p>Send your link to family and friends to RSVP and leave their wishes.</p></div></div>
+        </section>
+        <section className="platform-contact container" id="contact"><div className="platform-contact-inner"><div><span className="overline">READY TO CELEBRATE?</span><h2>Your graduation deserves <em>something special.</em></h2><p>Let's create a beautiful place for your milestone and the people celebrating with you.</p><div className="platform-contact-phone"><ShieldCheck size={16}/> Enquiries: 0743 621 712</div></div><a href={platformContactUrl} target="_blank" rel="noopener noreferrer" className="platform-contact-action">Chat on WhatsApp <ArrowUpRight size={17}/><span>Let's create your website</span></a></div></section>
+      </main>
+      <footer className="footer"><div className="container footer-inner"><div className="footer-brand"><GraduationCap size={25}/><strong>THE GRADUATION</strong><span>CELEBRATION</span></div><p>Beautifully celebrating every milestone.</p><a href="#home">Back to top</a></div><div className="container footer-bottom"><span>© 2026 Graduation Celebration.</span><span>Made for moments worth remembering.</span></div></footer>
+    </div>
+  )
   if (siteUnavailable) return <div className="site-unavailable"><GraduationCap size={44}/><h1>This graduation website is not available.</h1><p>Please contact the organizer.</p></div>
   return (
     <div className="site-shell">
