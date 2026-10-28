@@ -7,6 +7,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_SITES_BASE_DOMAIN: ${SITES_BASE_DOMAIN:-}
 
     expose:
       - "80"
