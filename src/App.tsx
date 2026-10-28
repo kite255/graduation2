@@ -16,7 +16,14 @@ type Wish = {guestName:string;message:string;createdAt:string}
 type GalleryImage = { id?: string; src: string; alt: string }
 
 function App() {
-  const pathSlug = window.location.pathname.match(/^\/s\/([a-z0-9-]+)\/?$/)?.[1] || null
+  const siteBaseDomain = (import.meta.env.VITE_SITES_BASE_DOMAIN || '').trim().toLowerCase()
+  const hostname = window.location.hostname.toLowerCase()
+  const hostnameSuffix = siteBaseDomain ? `.${siteBaseDomain}` : ''
+  const hostSlug = hostnameSuffix && hostname.endsWith(hostnameSuffix)
+    ? hostname.slice(0,-hostnameSuffix.length)
+    : null
+  const pathSlug = window.location.pathname.match(/^\/s\/([a-z0-9-]+)\/?$/)?.[1]
+    || (hostSlug && /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(hostSlug) && !['www','admin','app','api'].includes(hostSlug) ? hostSlug : null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [linkCopied,setLinkCopied]=useState(false)
   const [giftCopied,setGiftCopied]=useState(false)
