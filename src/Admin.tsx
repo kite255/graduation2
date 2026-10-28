@@ -20,6 +20,7 @@ export default function Admin() {
   const [captionValue,setCaptionValue]=useState('')
   const [captionBusy,setCaptionBusy]=useState(false)
   const [deletingPhoto,setDeletingPhoto]=useState<string|null>(null)
+  const [reorderingPhoto,setReorderingPhoto]=useState(false)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
@@ -181,6 +182,20 @@ export default function Admin() {
       setEditingCaption(null);setNotice('Caption updated successfully.')
     }catch(err){setError(err instanceof Error?err.message:'Unable to save caption')}finally{setCaptionBusy(false)}
   }
+  async function movePhoto(index:number,direction:-1|1){
+    const next=index+direction;
+    if(reorderingPhoto||next<0||next>=photos.length)return;
+    const reordered=[...photos];
+    [reordered[index],reordered[next]]=[reordered[next],reordered[index]];
+    if(reordered.some(photo=>!photo.id))return;
+    setReorderingPhoto(true);setError('');
+    try{
+      const res=await fetch('/api/admin/gallery/reorder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({siteId:siteId||null,ids:reordered.map(photo=>photo.id)})});
+      if(!res.ok){const body=await res.json().catch(()=>({}));throw new Error(body.message||'Could not reorder gallery')}
+      setPhotos(reordered);setNotice('Gallery order saved.');
+    }catch(err){setError(err instanceof Error?err.message:'Unable to change order')}
+    finally{setReorderingPhoto(false)}
+  }
   async function deletePhoto(photo:Photo){
     if(!photo.id||deletingPhoto)return
     if(!window.confirm(`Permanently delete this photo${photo.alt ? ` (${photo.alt})` : ''}? This cannot be undone.`))return
@@ -261,8 +276,8 @@ export default function Admin() {
           </section>
           <section className="admin-panel" aria-labelledby="gallery-title">
             <div className="admin-gallery-heading"><h2 id="gallery-title">Gallery photos</h2><span>{photos.length} shown</span></div>
-            {galleryError ? <p className="admin-hint">Unable to load the gallery. Refresh the page to try again.</p> : photos.length === 0 ? <div className="admin-empty"><ImagePlus size={30}/><p>No photos uploaded yet.</p></div> : <div className="admin-photo-grid">{photos.map(photo => <div key={photo.id || photo.src} className="admin-thumb"><img src={photo.src} alt={photo.alt || 'Graduation photograph'} loading="lazy" />{editingCaption===photo.id?<div className="admin-caption-editor"><input maxLength={200} aria-label="Edit photo caption" value={captionValue} onChange={e=>setCaptionValue(e.target.value)}/><button type="button" disabled={captionBusy} onClick={()=>void saveCaption(photo)}><Check size={15}/> Save</button><button type="button" onClick={()=>setEditingCaption(null)}>Cancel</button></div>:<div className="admin-caption-row"><span>{photo.alt||'Graduation photograph'}</span><button type="button" onClick={()=>{setEditingCaption(photo.id||null);setCaptionValue(photo.alt||'')}} disabled={!photo.id}><Pencil size={14}/> Edit</button><button type="button" className="admin-delete-photo" disabled={!photo.id||deletingPhoto===photo.id} onClick={()=>void deletePhoto(photo)}><Trash2 size={14}/> {deletingPhoto===photo.id?"Deleting…":"Delete"}</button></div>}</div>)}</div>}
-            <p className="admin-hint">Edit captions or permanently delete unwanted photos. Deletion requires confirmation.</p>
+            {galleryError ? <p className="admin-hint">Unable to load the gallery. Refresh the page to try again.</p> : photos.length === 0 ? <div className="admin-empty"><ImagePlus size={30}/><p>No photos uploaded yet.</p></div> : <div className="admin-photo-grid">{photos.map(photo => <div key={photo.id || photo.src} className="admin-thumb"><div className="admin-photo-order"><button type="button" disabled={reorderingPhoto||photos.indexOf(photo)===0} onClick={()=>void movePhoto(photos.indexOf(photo),-1)} aria-label="Move photo earlier">←</button><span>{photos.indexOf(photo)+1}</span><button type="button" disabled={reorderingPhoto||photos.indexOf(photo)===photos.length-1} onClick={()=>void movePhoto(photos.indexOf(photo),1)} aria-label="Move photo later">→</button></div><img src={photo.src} alt={photo.alt || 'Graduation photograph'} loading="lazy" />{editingCaption===photo.id?<div className="admin-caption-editor"><input maxLength={200} aria-label="Edit photo caption" value={captionValue} onChange={e=>setCaptionValue(e.target.value)}/><button type="button" disabled={captionBusy} onClick={()=>void saveCaption(photo)}><Check size={15}/> Save</button><button type="button" onClick={()=>setEditingCaption(null)}>Cancel</button></div>:<div className="admin-caption-row"><span>{photo.alt||'Graduation photograph'}</span><button type="button" onClick={()=>{setEditingCaption(photo.id||null);setCaptionValue(photo.alt||'')}} disabled={!photo.id}><Pencil size={14}/> Edit</button><button type="button" className="admin-delete-photo" disabled={!photo.id||deletingPhoto===photo.id} onClick={()=>void deletePhoto(photo)}><Trash2 size={14}/> {deletingPhoto===photo.id?"Deleting…":"Delete"}</button></div>}</div>)}</div>}
+            <p className="admin-hint">Use the arrows to arrange photos. The first photo appears first in the public gallery. You can also edit captions or delete photos.</p>
           </section>
         <section className="admin-panel admin-sites-panel" aria-labelledby="sites-title">
           <div className="admin-gallery-heading"><h2 id="sites-title">Graduation websites</h2><button type="button" className="admin-small-btn" onClick={() => void refreshSites()}>Load sites</button></div>
