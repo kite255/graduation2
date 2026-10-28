@@ -32,3 +32,7 @@ ALTER TABLE graduation_rsvps ALTER COLUMN attending DROP NOT NULL;
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS gift_phone VARCHAR(24);
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS gift_name VARCHAR(120);
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS gift_provider VARCHAR(50);
+
+-- Prevent duplicate new image uploads per graduate, including the main gallery.
+ALTER TABLE gallery_images ADD COLUMN IF NOT EXISTS content_hash VARCHAR(64);
+CREATE UNIQUE INDEX IF NOT EXISTS gallery_images_site_content_hash_unique ON gallery_images(site_id,content_hash) NULLS NOT DISTINCT WHERE content_hash IS NOT NULL;
