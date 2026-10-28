@@ -313,3 +313,14 @@ body{background:var(--ivory)}
 @media(max-width:700px){.gifts-section{padding-top:0;padding-bottom:38px}.gifts-inner{flex-wrap:wrap;padding:24px;gap:13px}.gifts-icon{width:44px;height:44px;flex-basis:44px}.gifts-copy{flex-basis:calc(100% - 60px)}.gifts-action{margin-left:57px}}
 
 .gift-payment{display:flex;flex-wrap:wrap;align-items:center;gap:9px 15px;margin-top:16px}.gift-payment span{font-size:10px;letter-spacing:.8px;color:#885c64;text-transform:uppercase}.gift-payment strong{font-size:16px;color:#542f3b;letter-spacing:.3px}.gift-payment button{display:inline-flex;gap:6px;align-items:center;border:1px solid #d7b7be;border-radius:7px;background:#fff;padding:8px 11px;color:#74394a;font-size:12px;cursor:pointer}@media(max-width:700px){.gift-payment{align-items:flex-start;flex-direction:column}}
+
+/* Platform-only enquiry invitation; graduate pages remain white-label */
+.platform-contact{padding-top:38px;padding-bottom:70px}
+.platform-contact-inner{display:flex;align-items:center;justify-content:space-between;gap:32px;padding:36px 42px;border:1px solid #eadbd7;border-radius:16px;background:#f7eeeb}
+.platform-contact h2{font:500 clamp(26px,3vw,37px)/1.2 'Playfair Display',Georgia,serif;margin:11px 0;color:#37282e}
+.platform-contact h2 em{color:#a45666}
+.platform-contact p{font-size:13px;line-height:1.7;color:#806c70;margin:0;max-width:560px}
+.platform-contact-action{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:15px 19px;color:#fff;background:#742b3a;border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap}
+.platform-contact-action span{width:100%;font-size:11px;font-weight:500;opacity:.86}
+.platform-contact-action:hover{background:#5a2330}
+@media(max-width:700px){.platform-contact{padding-top:25px;padding-bottom:48px}.platform-contact-inner{padding:26px 22px;display:block}.platform-contact-action{display:inline-flex;margin-top:20px}}
