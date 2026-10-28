@@ -232,7 +232,7 @@ app.get('/api/site', async (req, res, next) => {
     if (!slug) return res.json({ site: null });
     const site = await resolveSite(req);
     if (!site) return res.status(404).json({ message: 'Website not available' });
-    res.json({ site: { graduateName: site.graduate_name, slug: site.slug, eventDate: site.event_date, eventTime: site.event_time, venue: site.venue, message: site.message, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
+    res.json({ site: { graduateName: site.graduate_name, slug: site.slug, eventDate: site.event_date, eventTime: site.event_time, venue: site.venue, message: site.message, giftPhone:site.gift_phone, giftName:site.gift_name, giftProvider:site.gift_provider, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
   } catch (err) { next(err); }
 });
 app.get('/api/sites/:slug', async (req, res, next) => {
@@ -240,7 +240,7 @@ app.get('/api/sites/:slug', async (req, res, next) => {
     if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(req.params.slug)) return res.status(404).json({message:'Website not available'});
     const site = await resolveSite(req, req.params.slug);
     if (!site) return res.status(404).json({message:'Website not available'});
-    res.json({ site: { graduateName: site.graduate_name, slug:site.slug, eventDate:site.event_date, eventTime:site.event_time, venue:site.venue, message:site.message, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
+    res.json({ site: { graduateName: site.graduate_name, slug:site.slug, eventDate:site.event_date, eventTime:site.event_time, venue:site.venue, message:site.message, giftPhone:site.gift_phone, giftName:site.gift_name, giftProvider:site.gift_provider, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
   } catch (err) { next(err); }
 });
 app.get('/api/sites/:slug/gallery', async (req, res, next) => {
@@ -323,22 +323,23 @@ app.get('/api/admin/sites/:id/rsvps',requireAdmin,async(req,res,next)=>{
 });
 app.get('/api/admin/sites', requireAdmin, async (_req, res, next) => {
   try {
-    const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, message, hero_image AS "heroImageFilename", status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt", (SELECT COUNT(*)::int FROM graduation_rsvps r WHERE r.site_id = graduation_sites.id) AS "rsvpCount", (SELECT COUNT(*)::int FROM gallery_images g WHERE g.site_id = graduation_sites.id) AS "photoCount" FROM graduation_sites ORDER BY created_at DESC');
+    const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, message, gift_phone AS "giftPhone", gift_name AS "giftName", gift_provider AS "giftProvider", hero_image AS "heroImageFilename", status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt", (SELECT COUNT(*)::int FROM graduation_rsvps r WHERE r.site_id = graduation_sites.id) AS "rsvpCount", (SELECT COUNT(*)::int FROM gallery_images g WHERE g.site_id = graduation_sites.id) AS "photoCount" FROM graduation_sites ORDER BY created_at DESC');
     res.json(rows);
   } catch (err) { next(err); }
 });
 app.post('/api/admin/sites', requireAdmin, async (req, res, next) => {
   try {
-    const { slug, graduateName, eventDate, eventTime, venue, message, priceTzs } = req.body;
+    const { slug, graduateName, eventDate, eventTime, venue, message, priceTzs, giftPhone, giftName, giftProvider } = req.body;
+    if(giftPhone && !/^\+?[0-9][0-9\s-]{7,22}$/.test(String(giftPhone).trim()))return res.status(400).json({message:'Invalid gift phone number'});
     const cleanSlug = String(slug || '').toLowerCase().trim();
     const cleanName = String(graduateName || '').trim();
     if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(cleanSlug) || ['www', 'admin', 'api', 'app'].includes(cleanSlug) || !cleanName || cleanName.length > 160) {
       return res.status(400).json({ message: 'Enter a valid graduate name and a unique, lowercase subdomain.' });
     }
     if (priceTzs != null && (!Number.isSafeInteger(Number(priceTzs)) || Number(priceTzs) < 0)) return res.status(400).json({message:'Invalid price'});
-    const result = await pool.query(`INSERT INTO graduation_sites(id, slug, graduate_name, event_date, event_time, venue, message, price_tzs)
+    const result = await pool.query(`INSERT INTO graduation_sites(id, slug, graduate_name, event_date, event_time, venue, message, price_tzs, gift_phone, gift_name, gift_provider)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id,slug,status`,
-      [randomUUID(), cleanSlug, cleanName, eventDate || null, String(eventTime || '').slice(0,100), String(venue || '').slice(0,240), String(message || '').slice(0,3000), Number(priceTzs || 0)]);
+      [randomUUID(), cleanSlug, cleanName, eventDate || null, String(eventTime || '').slice(0,100), String(venue || '').slice(0,240), String(message || '').slice(0,3000), Number(priceTzs || 0),String(giftPhone||'').trim()||null,String(giftName||'').trim().slice(0,120)||null,String(giftProvider||'').trim().slice(0,50)||null]);
     res.status(201).json(result.rows[0]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ message: 'Subdomain already exists' });
@@ -347,9 +348,10 @@ app.post('/api/admin/sites', requireAdmin, async (req, res, next) => {
 });
 app.patch('/api/admin/sites/:id', requireAdmin, async (req, res, next) => {
   try {
-    const allowed = { graduateName:'graduate_name',eventDate:'event_date',eventTime:'event_time',venue:'venue',message:'message',status:'status',paymentStatus:'payment_status',priceTzs:'price_tzs',expiresAt:'expires_at' };
+    const allowed = { graduateName:'graduate_name',eventDate:'event_date',eventTime:'event_time',venue:'venue',message:'message',giftPhone:'gift_phone',giftName:'gift_name',giftProvider:'gift_provider',status:'status',paymentStatus:'payment_status',priceTzs:'price_tzs',expiresAt:'expires_at' };
     const fields = Object.entries(allowed).filter(([key])=>Object.hasOwn(req.body,key));
     if (!fields.length) return res.status(400).json({message:'No changes provided'});
+    if(Object.hasOwn(req.body,'giftPhone') && req.body.giftPhone && !/^\+?[0-9][0-9\s-]{7,22}$/.test(String(req.body.giftPhone).trim()))return res.status(400).json({message:'Invalid gift phone number'});
     if (req.body.status && !['draft','active','suspended'].includes(req.body.status)) return res.status(400).json({message:'Invalid status'});
     if (req.body.paymentStatus && !['pending','paid'].includes(req.body.paymentStatus)) return res.status(400).json({message:'Invalid payment status'});
     if (Object.hasOwn(req.body,'priceTzs') && (!Number.isSafeInteger(Number(req.body.priceTzs)) || Number(req.body.priceTzs) < 0)) return res.status(400).json({message:'Invalid price'});
