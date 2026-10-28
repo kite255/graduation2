@@ -258,3 +258,12 @@ body{background:var(--ivory)}
 .photo-lightbox-close{position:absolute;right:22px;top:20px;background:#ffffff24;color:#fff}
 @media(max-width:650px){.gallery-preview{grid-template-columns:repeat(2,minmax(0,1fr))}.gallery-preview .gallery-photo{aspect-ratio:1;height:auto}.gallery-dialog-backdrop{padding:0}.gallery-dialog{height:100dvh;max-height:none;border-radius:0}.gallery-dialog-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;gap:8px}.photo-lightbox{padding:12px 4px;gap:3px}.photo-lightbox-arrow{flex-basis:37px;width:37px;height:37px}.photo-lightbox figure{max-width:calc(100vw - 87px)}}
 @media(hover:none){.gallery-photo-overlay{opacity:1}}
+
+/* Minimal captions on thumbnail hover, full captions in photo viewer */
+.gallery-photo-overlay{justify-content:space-between;gap:12px;text-align:left;padding:24px 16px 15px}
+.gallery-photo-label{min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.45;font-size:12px;font-weight:600;overflow-wrap:anywhere}
+.gallery-photo-overlay svg{flex:0 0 auto}
+.photo-lightbox figcaption{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;max-width:min(750px,75vw);font-size:12px;line-height:1.55}
+.photo-lightbox-count{color:#c4acb3;letter-spacing:1px}
+.photo-lightbox-caption{color:#fff;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;text-align:center}
+@media(hover:none){.gallery-photo-overlay{opacity:0}.gallery-photo:focus-visible .gallery-photo-overlay{opacity:1}}
