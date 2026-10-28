@@ -274,7 +274,7 @@ app.post('/api/sites/:slug/rsvp', limitRsvp, async (req,res,next) => {
     if(!name || name.length>120 || typeof attending!=='boolean' || message.length>1200) return res.status(400).json({message:'Enter your name and attendance choice'});
     const recent=await pool.query('SELECT 1 FROM graduation_rsvps WHERE site_id=$1 AND lower(guest_name)=lower($2) AND created_at>NOW()-INTERVAL \'10 minutes\' LIMIT 1',[site.id,name]);
     if(recent.rowCount)return res.status(409).json({message:'A response with this name was recently submitted. Please try later.'});
-    await pool.query('INSERT INTO graduation_rsvps(id,site_id,guest_name,attending,message) VALUES($1,$2,$3,$4,$5)',[randomUUID(),site.id,name,attending,message]);
+    await pool.query('INSERT INTO graduation_rsvps(id,site_id,guest_name,attending,message,wish_approved) VALUES($1,$2,$3,$4,$5,TRUE)',[randomUUID(),site.id,name,attending,message]);
     res.status(201).json({success:true,message:'Thank you for responding'});
   } catch(err){next(err)}
 });
@@ -288,7 +288,7 @@ app.get('/api/sites/:slug/wishes',async(req,res,next)=>{
 });
 app.patch('/api/admin/sites/:id/rsvps/:rsvpId/wish',requireAdmin,async(req,res,next)=>{
  try{
-  if(typeof req.body.approved!=='boolean')return res.status(400).json({message:'Invalid moderation choice'});
+  if(req.body.approved!==false)return res.status(400).json({message:'Only hiding wishes is supported'});
   const result=await pool.query('UPDATE graduation_rsvps SET wish_approved=$1 WHERE id=$2 AND site_id=$3 AND message<>\'\' RETURNING id',[req.body.approved,req.params.rsvpId,req.params.id]);
   if(!result.rowCount)return res.status(404).json({message:'Wish not found'});
   res.json({success:true});
