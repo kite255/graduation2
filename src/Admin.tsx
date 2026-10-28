@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type DragEvent } from 'react'
-import { ArrowLeft, ImagePlus, UploadCloud, X, Pencil, Check, Trash2 } from 'lucide-react'
+import { ArrowLeft, GraduationCap, ImagePlus, UploadCloud, X, Pencil, Check, Trash2 } from 'lucide-react'
 import './Admin.css'
 
 type PendingPhoto = {file:File;preview:string;caption:string;key:string}
@@ -290,10 +290,7 @@ export default function Admin() {
   }
   return (
     <main className="admin-shell">
-      <header className="admin-topbar">
-        <a href="/" className="admin-back"><ArrowLeft size={18} /> Back to website</a>
-        <button type="button" className="admin-small-btn" onClick={() => void logout()}>Log out</button>
-      </header>
+      <header className="admin-topbar refreshed-admin-topbar"><div className="admin-header-brand"><span className="admin-header-icon"><GraduationCap size={24}/></span><span><strong>Graduation Studio</strong><small>ADMIN WORKSPACE</small></span></div><div className="admin-header-actions"><a href="/" className="admin-back"><ArrowLeft size={16}/> View website</a><span className="admin-header-role">Administrator</span><button type="button" className="admin-small-btn" onClick={() => void logout()}>Log out</button></div></header>
       <div className="admin-wrap">
         <div className="admin-heading">
           <span className="admin-eyebrow">GRADUATION WEBSITE · ADMIN</span>
