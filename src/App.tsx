@@ -173,7 +173,7 @@ function App() {
   async function copySiteLink(){try{await navigator.clipboard.writeText(siteUrl);setLinkCopied(true);window.setTimeout(()=>setLinkCopied(false),2200)}catch{setLinkCopied(false)}}
   if (!pathSlug) return (
     <div className="site-shell platform-site">
-      <header className="site-header">
+      <header className="site-header refreshed-header">
         <a className="brand" href="#home" aria-label="Graduation websites home"><span className="brand-icon"><GraduationCap size={23}/></span><span>THE <strong>GRADUATION</strong><small>CELEBRATION</small></span></a>
         <button className="mobile-menu" onClick={()=>setMenuOpen(v=>!v)} aria-label="Toggle menu" aria-expanded={menuOpen}>{menuOpen?<X/>:<Menu/>}</button>
         <nav className={menuOpen?'nav open':'nav'} aria-label="Main navigation">
@@ -216,13 +216,13 @@ function App() {
   return (
     <div className={`site-shell graduate-theme-${site?.theme||"maroon"}`}>{site?.musicFile&&<div className="graduate-music-control"><audio ref={musicRef} src={site.musicFile} loop preload="none"/><button type="button" onClick={()=>setMusicEnabled(v=>!v)} aria-label={musicEnabled?"Mute background music":"Play background music"}>{musicEnabled?"♪ Mute music":"♪ Play music"}</button></div>}
       <header className="site-header">
-        <a className="brand" href="#home" aria-label="Graduation home"><span className="brand-icon"><GraduationCap size={23}/></span><span>THE <strong>GRADUATION</strong><small>CELEBRATION</small></span></a>
+        <a className="brand graduate-brand" href="#home" aria-label={`${site?.graduateName||"Graduation"} celebration home`}><span className="brand-icon"><GraduationCap size={23}/></span><span><strong>{site?.graduateName||"Graduation"}</strong><small>GRADUATION CELEBRATION</small></span></a>
         <button className="mobile-menu" onClick={() => setMenuOpen(v => !v)} aria-label="Toggle menu" aria-expanded={menuOpen}>{menuOpen ? <X/> : <Menu/>}</button>
         <nav className={menuOpen ? 'nav open' : 'nav'} aria-label="Main navigation">
           <a onClick={() => setMenuOpen(false)} href="#home">Home</a>
           <a onClick={() => setMenuOpen(false)} href="#details">Event Info</a>
-          <a onClick={() => setMenuOpen(false)} href="#moments">Gallery</a>
-          {pathSlug && <a onClick={() => setMenuOpen(false)} href="#wishes">Wishes</a>}
+          {site?.showGallery!==false&&<a onClick={() => setMenuOpen(false)} href="#moments">Gallery</a>}
+          {site?.showWishes!==false && <a onClick={() => setMenuOpen(false)} href="#wishes">Wishes</a>}
           <a className="nav-cta" onClick={() => setMenuOpen(false)} href={pathSlug ? "#rsvp" : platformContactUrl} {...(!pathSlug ? {target:"_blank",rel:"noopener noreferrer"} : {})}>{pathSlug ? "RSVP" : "Get Your Website"} <ArrowUpRight size={15}/></a>
         </nav>
       </header>
