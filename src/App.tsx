@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Pause, Play, Share2, Copy, Check, Images, Send, LockKeyhole, Gift, Camera, Heart, Globe2, ShieldCheck } from 'lucide-react'
 import './App.css'
 
@@ -24,6 +24,19 @@ function App() {
     : null
   const pathSlug = window.location.pathname.match(/^\/s\/([a-z0-9-]+)\/?$/)?.[1]
     || (hostSlug && /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(hostSlug) && !['www','admin','app','api'].includes(hostSlug) ? hostSlug : null)
+  const musicRef=useRef<HTMLAudioElement|null>(null)
+  const [musicEnabled,setMusicEnabled]=useState(false)
+  const [currentSection,setCurrentSection]=useState('hero')
+  useEffect(()=>{
+    if(!site?.musicFile||!musicEnabled)return
+    const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(visible)setCurrentSection(visible.target.id)},{threshold:[.1,.3,.5,.7]})
+    document.querySelectorAll('#home,#details,#moments,#rsvp,#wishes,#gifts').forEach(node=>observer.observe(node))
+    return ()=>observer.disconnect()
+  },[site?.musicFile,musicEnabled])
+  useEffect(()=>{
+    const player=musicRef.current;if(!player)return
+    if(musicEnabled&&(site?.musicSection==='all'||site?.musicSection===currentSection)){void player.play().catch(()=>setMusicEnabled(false))}else player.pause()
+  },[musicEnabled,currentSection,site?.musicFile,site?.musicSection])
   const [menuOpen, setMenuOpen] = useState(false)
   const [linkCopied,setLinkCopied]=useState(false)
   const [giftCopied,setGiftCopied]=useState(false)
@@ -90,7 +103,7 @@ function App() {
   const [activePhoto,setActivePhoto]=useState<number|null>(null)
   const galleryPhotos=gallery.filter((photo,index,all)=>all.findIndex(item=>item.src===photo.src)===index)
   useEffect(()=>{if(activePhoto===null&&!showAllPhotos)return;function onKey(e:KeyboardEvent){if(e.key==='Escape'){setActivePhoto(null);setShowAllPhotos(false)}else if(activePhoto!==null&&e.key==='ArrowRight')setActivePhoto(i=>i===null?null:(i+1)%galleryPhotos.length);else if(activePhoto!==null&&e.key==='ArrowLeft')setActivePhoto(i=>i===null?null:(i+galleryPhotos.length-1)%galleryPhotos.length)}window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey)},[activePhoto,showAllPhotos,galleryPhotos.length])
-  const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null; heroImage: string | null; giftPhone:string|null;giftName:string|null;giftProvider:string|null;giftMethods?:{provider:string;account:string;name:string}[];theme?:string;showGallery?:boolean;showWishes?:boolean;showGifts?:boolean;showCountdown?:boolean } | null>(null)
+  const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null; heroImage: string | null; giftPhone:string|null;giftName:string|null;giftProvider:string|null;giftMethods?:{provider:string;account:string;name:string}[];musicFile?:string|null;musicSection?:string;theme?:string;showGallery?:boolean;showWishes?:boolean;showGifts?:boolean;showCountdown?:boolean } | null>(null)
   const [countdownNow,setCountdownNow]=useState(Date.now())
   useEffect(()=>{
     if(!site?.showCountdown||!site.eventDate)return
@@ -195,7 +208,7 @@ function App() {
   )
   if (siteUnavailable) return <div className="site-unavailable"><GraduationCap size={44}/><h1>This graduation website is not available.</h1><p>Please contact the organizer.</p></div>
   return (
-    <div className={`site-shell graduate-theme-${site?.theme||"maroon"}`}>
+    <div className={`site-shell graduate-theme-${site?.theme||"maroon"}`}>{site?.musicFile&&<div className="graduate-music-control"><audio ref={musicRef} src={site.musicFile} loop preload="none"/><button type="button" onClick={()=>setMusicEnabled(v=>!v)} aria-label={musicEnabled?"Mute background music":"Play background music"}>{musicEnabled?"♪ Mute music":"♪ Play music"}</button></div>}
       <header className="site-header">
         <a className="brand" href="#home" aria-label="Graduation home"><span className="brand-icon"><GraduationCap size={23}/></span><span>THE <strong>GRADUATION</strong><small>CELEBRATION</small></span></a>
         <button className="mobile-menu" onClick={() => setMenuOpen(v => !v)} aria-label="Toggle menu" aria-expanded={menuOpen}>{menuOpen ? <X/> : <Menu/>}</button>
