@@ -267,3 +267,10 @@ body{background:var(--ivory)}
 .photo-lightbox-count{color:#c4acb3;letter-spacing:1px}
 .photo-lightbox-caption{color:#fff;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;text-align:center}
 @media(hover:none){.gallery-photo-overlay{opacity:0}.gallery-photo:focus-visible .gallery-photo-overlay{opacity:1}}
+
+/* Captions remain visible in All Memories, without covering the photos */
+.gallery-dialog-grid .gallery-dialog-photo{display:flex;flex-direction:column;align-items:stretch;text-align:left;aspect-ratio:auto;background:#fff;border:1px solid #eaded9;cursor:zoom-in}
+.gallery-dialog-grid .gallery-dialog-photo img{height:auto;aspect-ratio:4/3;object-fit:cover;width:100%;flex:none}
+.gallery-dialog-caption{display:block;padding:11px 12px;font-size:12px;font-weight:600;line-height:1.4;color:#5b3b45;overflow-wrap:anywhere}
+.gallery-dialog-photo:focus-visible{outline:3px solid #955260;outline-offset:2px}
+@media(max-width:650px){.gallery-dialog-caption{padding:9px;font-size:11px}}
