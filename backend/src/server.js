@@ -382,6 +382,15 @@ app.get('/api/gallery', async (_req, res, next) => {
   }
 });
 
+app.get('/api/admin/gallery',requireAdmin,async(req,res,next)=>{
+ try{
+  const siteId=String(req.query.siteId||'');
+  if(siteId && !/^[a-f\d-]{36}$/i.test(siteId))return res.status(400).json({message:'Invalid website ID'});
+  const {rows}=await pool.query('SELECT id,filename,alt_text,created_at FROM gallery_images WHERE site_id IS NOT DISTINCT FROM $1 ORDER BY created_at DESC LIMIT 200',[siteId||null]);
+  res.json(rows.map(photo=>({id:photo.id,src:'/uploads/gallery/'+encodeURIComponent(photo.filename),alt:photo.alt_text,createdAt:photo.created_at})));
+ }catch(err){next(err)}
+});
+
 // ========================================
 // IMAGE UPLOAD CONFIGURATION
 // ========================================
