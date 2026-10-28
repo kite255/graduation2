@@ -1,7 +1,8 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { ArrowLeft, ImagePlus, UploadCloud } from 'lucide-react'
+import { useEffect, useState, type FormEvent, type DragEvent } from 'react'
+import { ArrowLeft, ImagePlus, UploadCloud, X, Pencil, Check } from 'lucide-react'
 import './Admin.css'
 
+type PendingPhoto = {file:File;preview:string;caption:string;key:string}
 type Photo = { id?: string; src: string; alt: string }
 type Site = { id: string; slug: string; graduateName: string; status: string; paymentStatus: string; priceTzs: number; rsvpCount?: number; photoCount?: number }
 
@@ -12,8 +13,12 @@ export default function Admin() {
   const [showCreate,setShowCreate]=useState(false)
   const [authenticated, setAuthenticated] = useState(false)
   const [checking, setChecking] = useState(true)
-  const [file, setFile] = useState<File | null>(null)
-  const [alt, setAlt] = useState('')
+  const [queue,setQueue]=useState<PendingPhoto[]>([])
+  const [dragging,setDragging]=useState(false)
+  const [progress,setProgress]=useState('')
+  const [editingCaption,setEditingCaption]=useState<string|null>(null)
+  const [captionValue,setCaptionValue]=useState('')
+  const [captionBusy,setCaptionBusy]=useState(false)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
@@ -134,38 +139,45 @@ export default function Admin() {
     finally {setHeroBusy(null)}
   }
 
-  async function handleUpload(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError('')
-    setNotice('')
-    if (!file) { setError('Select a photo first.'); return }
-    if (file.size > 8 * 1024 * 1024) { setError('Select an image smaller than 8 MB.'); return }
-    setBusy(true)
-    try {
-      const payload = new FormData()
-      payload.append('image', file)
-      payload.append('alt', alt.trim() || 'Graduation memory')
-      if (siteId) payload.append('siteId', siteId)
-      const response = await fetch('/api/admin/gallery', {
-        method: 'POST',
-        headers: {},
-        body: payload,
-      })
-      const result: { message?: string } = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(response.status === 401
-        ? 'Your session has expired. Please sign in again.'
-        : result.message || 'Upload failed. Please try again.')
-      setNotice('Photo uploaded successfully. It is now available in the public gallery.')
-      setFile(null)
-      setAlt('')
-      const input = document.getElementById('admin-photo') as HTMLInputElement | null
-      if (input) input.value = ''
-      await refreshGallery()
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Upload failed.')
-    } finally {
-      setBusy(false)
+  function addPhotos(files:FileList|File[]){
+    const incoming=Array.from(files)
+    const valid=incoming.filter(file=>file.size<=8*1024*1024&&file.size>0&&(file.type.startsWith('image/')||/\\.(jpg|jpeg|png|webp|avif|heic|heif)$/i.test(file.name)))
+    if(valid.length!==incoming.length)setError('Some files were skipped: choose supported images under 8 MB each.')
+    setQueue(prev=>[...prev,...valid.slice(0,Math.max(0,30-prev.length)).map(file=>({file,preview:URL.createObjectURL(file),caption:'',key:crypto.randomUUID()}))])
+    if(incoming.length>30-queue.length)setError('You can queue a maximum of 30 photos per batch.')
+  }
+  function onDrop(event:DragEvent<HTMLDivElement>){event.preventDefault();setDragging(false);if(!busy)addPhotos(event.dataTransfer.files)}
+  function removeQueued(key:string){setQueue(prev=>{const item=prev.find(x=>x.key===key);if(item)URL.revokeObjectURL(item.preview);return prev.filter(x=>x.key!==key)})}
+  async function saveCaption(photo:Photo){
+    if(!photo.id)return
+    setCaptionBusy(true);setError('')
+    try{
+      const res=await fetch(`/api/admin/gallery/${photo.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({alt:captionValue})})
+      const body=await res.json().catch(()=>({}))
+      if(!res.ok)throw new Error(body.message||'Unable to save caption')
+      setPhotos(prev=>prev.map(p=>p.id===photo.id?{...p,alt:captionValue.trim()}:p))
+      setEditingCaption(null);setNotice('Caption updated successfully.')
+    }catch(err){setError(err instanceof Error?err.message:'Unable to save caption')}finally{setCaptionBusy(false)}
+  }
+  async function handleUpload(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();if(!queue.length)return
+    setBusy(true);setError('');setNotice('')
+    const pending=[...queue];let success=0;let failed=0
+    for(const [index,item] of pending.entries()){
+      setProgress(`Uploading ${index+1} of ${pending.length}: ${item.file.name}`)
+      try{
+        const data=new FormData();data.append('image',item.file);data.append('alt',item.caption.trim()||'Graduation memory')
+        if(siteId)data.append('siteId',siteId)
+        const res=await fetch('/api/admin/gallery',{method:'POST',body:data})
+        const body=await res.json().catch(()=>({}))
+        if(!res.ok)throw new Error(body.message||'Upload failed')
+        success++;removeQueued(item.key)
+      }catch{failed++}
     }
+    setProgress('');setBusy(false)
+    setNotice(`${success} photo(s) uploaded successfully.`)
+    if(failed)setError(`${failed} photo(s) failed. They remain in the queue for retry.`)
+    await refreshGallery()
   }
 
   const filteredSites=sites.filter(site => (filter==='all'||(filter==='unpaid'?site.paymentStatus==='pending':site.status===filter)) && (site.graduateName+' '+site.slug).toLowerCase().includes(search.toLowerCase()))
@@ -198,20 +210,23 @@ export default function Admin() {
             <form onSubmit={handleUpload} className="admin-form">
               <label htmlFor="admin-site-upload">Upload to website</label>
               <select id="admin-site-upload" value={siteId} onChange={e => setSiteId(e.target.value)}><option value="">Main website</option>{sites.map(site => <option key={site.id} value={site.id}>{site.graduateName} ({site.slug})</option>)}</select>
-              <label htmlFor="admin-photo">Graduation photo</label>
-              <input id="admin-photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heif" onChange={e => setFile(e.target.files?.[0] || null)} required />
-              <p className="admin-hint">JPG, PNG, WebP, AVIF or HEIF · Maximum 8 MB · Automatically optimized.</p>
-              <label htmlFor="admin-alt">Photo description</label>
-              <input id="admin-alt" type="text" maxLength={200} value={alt} onChange={e => setAlt(e.target.value)} placeholder="e.g. Graduation ceremony group photograph" />
+              <div className={dragging?'admin-dropzone dragging':'admin-dropzone'} onDragOver={e=>{e.preventDefault();if(!busy)setDragging(true)}} onDragLeave={()=>setDragging(false)} onDrop={onDrop}>
+                <UploadCloud size={31}/><strong>Drag and drop your photos here</strong><span>or select multiple photos from your device</span>
+                <label className="admin-file-picker" htmlFor="admin-photo">Browse photos</label>
+                <input id="admin-photo" type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif,image/heif,image/heic" disabled={busy} onChange={e=>{if(e.target.files)addPhotos(e.target.files);e.target.value=''}}/>
+                <small>Up to 30 photos per batch, 8 MB per image</small>
+              </div>
+              {queue.length>0&&<div className="admin-upload-queue"><h3>Preview photos ({queue.length})</h3><div className="admin-upload-previews">{queue.map(item=><div className="admin-upload-preview" key={item.key}><img src={item.preview} alt={item.file.name}/><div><strong>{item.file.name}</strong><label htmlFor={`caption-${item.key}`}>Caption</label><input id={`caption-${item.key}`} maxLength={200} value={item.caption} onChange={e=>setQueue(prev=>prev.map(p=>p.key===item.key?{...p,caption:e.target.value}:p))} placeholder="Describe this moment"/><button type="button" disabled={busy} onClick={()=>removeQueued(item.key)}><X size={14}/> Remove</button></div></div>)}</div></div>}
+              {progress&&<p role="status" className="admin-hint">{progress}</p>}
               {error && <p className="admin-error" role="alert">{error}</p>}
               {notice && <p className="admin-success" role="status">{notice}</p>}
-              <button className="admin-submit" type="submit" disabled={busy}><UploadCloud size={19}/>{busy ? 'Uploading…' : 'Upload photo'}</button>
+              <button className="admin-submit" type="submit" disabled={busy||queue.length===0}><UploadCloud size={19}/>{busy ? 'Uploading…' : `Upload ${queue.length} photo${queue.length===1?'':'s'}`}</button>
             </form>
           </section>
           <section className="admin-panel" aria-labelledby="gallery-title">
             <div className="admin-gallery-heading"><h2 id="gallery-title">Gallery photos</h2><span>{photos.length} shown</span></div>
-            {galleryError ? <p className="admin-hint">Unable to load the gallery. Refresh the page to try again.</p> : photos.length === 0 ? <div className="admin-empty"><ImagePlus size={30}/><p>No photos uploaded yet.</p></div> : <div className="admin-photo-grid">{photos.map(photo => <div key={photo.id || photo.src} className="admin-thumb"><img src={photo.src} alt={photo.alt || 'Graduation photograph'} loading="lazy" /><span>{photo.alt || 'Graduation photograph'}</span></div>)}</div>}
-            <p className="admin-hint">Your site currently supports adding and viewing photos. Editing and deleting will be available in a future update.</p>
+            {galleryError ? <p className="admin-hint">Unable to load the gallery. Refresh the page to try again.</p> : photos.length === 0 ? <div className="admin-empty"><ImagePlus size={30}/><p>No photos uploaded yet.</p></div> : <div className="admin-photo-grid">{photos.map(photo => <div key={photo.id || photo.src} className="admin-thumb"><img src={photo.src} alt={photo.alt || 'Graduation photograph'} loading="lazy" />{editingCaption===photo.id?<div className="admin-caption-editor"><input maxLength={200} aria-label="Edit photo caption" value={captionValue} onChange={e=>setCaptionValue(e.target.value)}/><button type="button" disabled={captionBusy} onClick={()=>void saveCaption(photo)}><Check size={15}/> Save</button><button type="button" onClick={()=>setEditingCaption(null)}>Cancel</button></div>:<div className="admin-caption-row"><span>{photo.alt||'Graduation photograph'}</span><button type="button" onClick={()=>{setEditingCaption(photo.id||null);setCaptionValue(photo.alt||'')}} disabled={!photo.id}><Pencil size={14}/> Edit</button></div>}</div>)}</div>}
+            <p className="admin-hint">Captions can be edited at any time. Deleting photos is not yet available.</p>
           </section>
         <section className="admin-panel admin-sites-panel" aria-labelledby="sites-title">
           <div className="admin-gallery-heading"><h2 id="sites-title">Graduation websites</h2><button type="button" className="admin-small-btn" onClick={() => void refreshSites()}>Load sites</button></div>
