@@ -141,7 +141,7 @@ function App() {
             <div className="platform-hero-actions"><a className="button primary" href={platformContactUrl} target="_blank" rel="noopener noreferrer">Get Your Graduation Website <ArrowUpRight size={17}/></a><a className="platform-secondary-link" href="#features">Explore features <ArrowUpRight size={15}/></a></div>
             <div className="platform-trust"><span><Check size={15}/> Personalized for you</span><span><Check size={15}/> Easy to share</span><span><Check size={15}/> Mobile-friendly</span></div>
           </div>
-          <div className="platform-hero-art"><img src="/graduation-hero.jpg" alt="Graduation celebration portrait"/><div className="platform-art-note"><span>A MOMENT TO REMEMBER</span><strong>Every achievement<br/>deserves a celebration.</strong></div></div>
+          <div className="platform-hero-art"><div className="platform-art-emblem" aria-hidden="true"><span className="platform-art-ring"/><GraduationCap size={120} strokeWidth={0.95}/><span className="platform-art-year">A NEW CHAPTER</span></div><div className="platform-art-note"><span>A MOMENT TO REMEMBER</span><strong>Every achievement<br/>deserves a celebration.</strong></div></div>
         </section>
         <section className="platform-features container" id="features">
           <div className="section-heading"><span className="overline">THOUGHTFULLY DESIGNED</span><h2>Everything you need, <em>beautifully simple.</em></h2><p>One memorable link to bring your graduation celebration together.</p></div>
