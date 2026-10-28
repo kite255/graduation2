@@ -108,6 +108,25 @@ function App() {
       })
       .catch(() => setGalleryError(true))
   }, [])
+  // Progressive enhancement: content stays visible if animation APIs are unavailable.
+  useEffect(()=>{
+    if(typeof IntersectionObserver==='undefined'||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return
+    const targets=document.querySelectorAll<HTMLElement>('.platform-features,.platform-process,.platform-contact,.details-section,.gallery-section,.rsvp-section,.wishes-section,.gifts-section')
+    const observer=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add('is-revealed')
+          observer.unobserve(entry.target)
+        }
+      })
+    },{threshold:.08,rootMargin:'0px 0px -35px 0px'})
+    targets.forEach(target=>{
+      if(target.getBoundingClientRect().top<window.innerHeight*0.9) return
+      target.classList.add('reveal-on-scroll')
+      observer.observe(target)
+    })
+    return ()=>{observer.disconnect();targets.forEach(target=>target.classList.remove('reveal-on-scroll','is-revealed'))}
+  },[pathSlug,site])
   const siteUrl=window.location.href.split('#')[0]
   const shareMessage=site ? `Join us in celebrating ${site.graduateName}'s graduation! ${siteUrl}` : `Join our graduation celebration! ${siteUrl}`
   const whatsAppUrl=`https://wa.me/?text=${encodeURIComponent(shareMessage)}`
