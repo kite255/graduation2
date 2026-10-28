@@ -145,11 +145,11 @@ function App() {
 
         
         <section className="details-section container" id="details">
-          <div className="section-heading"><span className="overline">CELEBRATE WITH US</span><h2>The special <em>day.</em></h2><p>Here is everything you need to join the celebration.</p></div>
+          <div className="section-heading"><span className="overline">CELEBRATE WITH US</span><h2>The special <em>day.</em></h2><p>The details for the graduation celebration.</p></div>
           <div className="detail-grid">
-            <article className="detail-card"><span className="detail-icon"><CalendarDays size={22}/></span><div className="detail-copy"><span className="detail-number">CEREMONY DATE</span><h3>{site?.eventDate ? new Date(site.eventDate).toLocaleDateString('en-TZ', { weekday:'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : 'Date to be announced'}</h3><p>A day to celebrate a wonderful achievement.</p></div></article>
-            {(site?.eventTime || !pathSlug) && <article className="detail-card"><span className="detail-icon"><Clock3 size={22}/></span><div className="detail-copy"><span className="detail-number">STARTING TIME</span><h3>{site?.eventTime || 'Time to be announced'}</h3><p>We look forward to seeing you.</p></div></article>}
-            <article className="detail-card"><span className="detail-icon"><MapPin size={22}/></span><div className="detail-copy"><span className="detail-number">VENUE</span><h3>{site?.venue || 'Venue to be announced'}</h3><p>We cannot wait to celebrate together.</p></div></article>
+            <article className="detail-card"><span className="detail-icon"><CalendarDays size={22}/></span><div className="detail-copy"><span className="detail-number">CEREMONY DATE</span><h3>{site?.eventDate ? new Date(site.eventDate).toLocaleDateString('en-TZ', { weekday:'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : 'Date to be announced'}</h3><p>Mark your calendar for this special occasion.</p></div></article>
+            {(site?.eventTime || !pathSlug) && <article className="detail-card"><span className="detail-icon"><Clock3 size={22}/></span><div className="detail-copy"><span className="detail-number">STARTING TIME</span><h3>{site?.eventTime || 'Time to be announced'}</h3><p>Plan to arrive a little early.</p></div></article>}
+            <article className="detail-card"><span className="detail-icon"><MapPin size={22}/></span><div className="detail-copy"><span className="detail-number">VENUE</span><h3>{site?.venue || 'Venue to be announced'}</h3>{site?.venue && <a className="detail-map-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.venue)}`} target="_blank" rel="noopener noreferrer">Find on Google Maps <ArrowUpRight size={14}/></a>}{!site?.venue&&<p>Location details will be shared soon.</p>}</div></article>
           </div>
         </section>
 
