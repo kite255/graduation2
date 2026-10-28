@@ -271,7 +271,7 @@ app.post('/api/sites/:slug/rsvp', limitRsvp, async (req,res,next) => {
     const name=String(req.body.name || '').trim();
     const attending=req.body.attending;
     const message=String(req.body.message || '').trim();
-    if(!name || name.length>120 || typeof attending!=='boolean' || message.length>1200) return res.status(400).json({message:'Enter your name and attendance choice'});
+    if(!name || name.length>120 || (attending!==null && typeof attending!=='boolean') || message.length>1200 || (attending===null && !message)) return res.status(400).json({message:'Enter your name and choose attendance or write a wish'});
     const recent=await pool.query('SELECT 1 FROM graduation_rsvps WHERE site_id=$1 AND lower(guest_name)=lower($2) AND created_at>NOW()-INTERVAL \'10 minutes\' LIMIT 1',[site.id,name]);
     if(recent.rowCount)return res.status(409).json({message:'A response with this name was recently submitted. Please try later.'});
     await pool.query('INSERT INTO graduation_rsvps(id,site_id,guest_name,attending,message,wish_approved) VALUES($1,$2,$3,$4,$5,TRUE)',[randomUUID(),site.id,name,attending,message]);
@@ -301,7 +301,7 @@ app.patch('/api/admin/sites/:id/rsvps/:rsvpId/wish',requireAdmin,async(req,res,n
 });
 app.get('/api/admin/sites/:id/rsvp-summary',requireAdmin,async(req,res,next)=>{
  try {
-  const {rows}=await pool.query('SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE attending)::int AS attending, COUNT(*) FILTER (WHERE NOT attending)::int AS declined FROM graduation_rsvps WHERE site_id=$1',[req.params.id]);
+  const {rows}=await pool.query('SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE attending)::int AS attending, COUNT(*) FILTER (WHERE attending=FALSE)::int AS declined FROM graduation_rsvps WHERE site_id=$1',[req.params.id]);
   res.json(rows[0]);
  } catch(err){next(err)}
 });
