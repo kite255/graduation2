@@ -484,3 +484,5 @@ body{background:var(--ivory)}
 .hero-attendance-choices button.selected,.hero-attendance-choices button:hover{background:#742b3a;color:#fff;border-color:#742b3a}
 .hero-attendance-choices button:focus-visible{outline:3px solid #a87380;outline-offset:3px}
 @media(max-width:650px){.hero-attendance-choices{gap:7px}.hero-attendance-choices button{min-height:44px;padding:10px 12px}}
+
+.graduate-music-control{position:fixed;right:18px;bottom:20px;z-index:80}.graduate-music-control button{padding:11px 15px;border:1px solid #dcbfc3;border-radius:999px;background:#fff9f6;color:#742b3a;font-weight:700;box-shadow:0 4px 18px #2c14202a;cursor:pointer}.graduate-music-control button:focus-visible{outline:3px solid #a76e7b;outline-offset:3px}@media(max-width:650px){.graduate-music-control{right:12px;bottom:12px}.graduate-music-control button{padding:11px 12px;font-size:12px}}
