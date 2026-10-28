@@ -7,6 +7,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_SITES_BASE_DOMAIN: ${SITES_BASE_DOMAIN:-}
 
     ports:
       - "127.0.0.1:8080:80"
@@ -29,6 +31,7 @@ services:
       NODE_ENV: production
       PORT: "3001"
       HOST: "0.0.0.0"
+      SITES_BASE_DOMAIN: ${SITES_BASE_DOMAIN:-}
 
       # PostgreSQL connection
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
