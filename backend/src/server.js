@@ -436,6 +436,18 @@ app.patch('/api/admin/gallery/:id',requireAdmin,async(req,res,next)=>{
  }catch(err){next(err)}
 });
 
+app.delete('/api/admin/gallery/:id',requireAdmin,async(req,res,next)=>{
+ try{
+  const {rows}=await pool.query('DELETE FROM gallery_images WHERE id=$1 RETURNING filename',[req.params.id]);
+  if(!rows.length)return res.status(404).json({message:'Photo not found'});
+  const filename=rows[0].filename;
+  if(/^[a-f0-9-]+\.webp$/i.test(filename)){
+    await unlink(path.join(galleryDir,filename)).catch(err=>{if(err.code!=='ENOENT')console.error('Gallery file cleanup failed:',err)});
+  }
+  res.json({success:true});
+ }catch(err){next(err)}
+});
+
 // ========================================
 // ADMINISTRATOR GALLERY UPLOAD
 // ========================================
