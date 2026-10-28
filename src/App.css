@@ -416,3 +416,10 @@ body{background:var(--ivory)}
 .hero-portrait-fallback{position:absolute;inset:0;z-index:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(circle at 50% 35%,#cba9a0,#8a5c66 60%,#573442);color:#f7e7dd}
 .hero-portrait-fallback span{font-size:10px;letter-spacing:2.3px;font-weight:700}
 @media(max-width:650px){.site-shell:not(.platform-site) .hero-content{padding-top:42px;padding-bottom:32px}.site-shell:not(.platform-site) .hero h1{font-size:clamp(39px,9vw,55px);margin:19px 0 16px;letter-spacing:-1px}.site-shell:not(.platform-site) .hero h1 em{font-size:.78em;letter-spacing:-.6px}.site-shell:not(.platform-site) .hero-foot{padding-top:24px}.site-shell:not(.platform-site) .guest-quick-actions a,.site-shell:not(.platform-site) .guest-quick-actions button{min-height:41px}}
+
+/* Keep sharing in hero and event actions in their information cards */
+.site-shell:not(.platform-site) .details-section{padding-bottom:26px}
+.site-shell:not(.platform-site) .gallery-section{padding-top:34px}
+.site-shell:not(.platform-site) .guest-quick-actions{margin-top:14px;gap:8px}
+.site-shell:not(.platform-site) .detail-map-link{min-height:28px;display:inline-flex;align-items:center}
+@media(max-width:650px){.site-shell:not(.platform-site) .details-section{padding-bottom:18px}.site-shell:not(.platform-site) .gallery-section{padding-top:27px}.site-shell:not(.platform-site) .guest-quick-actions{margin-top:12px}}
