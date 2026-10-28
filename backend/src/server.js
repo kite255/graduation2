@@ -7,7 +7,7 @@ import multer from 'multer';
 import sharp from 'sharp';
 
 import { randomUUID, randomBytes, createHash, scryptSync, timingSafeEqual } from 'node:crypto';
-import { mkdir, unlink } from 'node:fs/promises';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { pool } from './db.js';
@@ -510,18 +510,21 @@ app.post(
         });
       }
 
-      // Optimize and convert to WebP.
-      await processor
-        .rotate()
-        .resize({
-          width: 1920,
-          withoutEnlargement: true,
-        })
-        .webp({
-          quality: 80,
-        })
-        .toFile(destination);
-
+      // Normalize orientation, size and format before hashing. Different filenames
+      // or source encodings of the same resulting image cannot create duplicates.
+      const optimized = await processor.rotate().resize({
+        width: 1920,
+        withoutEnlargement: true,
+      }).webp({quality:80}).toBuffer();
+      const contentHash = createHash('sha256').update(optimized).digest('hex');
+      const existing = await pool.query(
+        'SELECT id FROM gallery_images WHERE site_id IS NOT DISTINCT FROM $1 AND content_hash=$2 LIMIT 1',
+        [siteId,contentHash]
+      );
+      if(existing.rowCount)return res.status(409).json({
+        success:false,message:'This photo is already in this gallery.'
+      });
+      await writeFile(destination,optimized);
       fileSaved = true;
 
       // Store file metadata in PostgreSQL.
@@ -530,11 +533,11 @@ app.post(
         INSERT INTO gallery_images (
           id,
           filename,
-          alt_text, site_id
+          alt_text, site_id, content_hash
         )
-        VALUES ($1, $2, $3, $4)
+        VALUES ($1, $2, $3, $4, $5)
         `,
-        [imageId, filename, alt, siteId]
+        [imageId, filename, alt, siteId, contentHash]
       );
 
       return res.status(201).json({
@@ -560,6 +563,7 @@ app.post(
         );
       }
 
+      if(error.code==='23505')return res.status(409).json({success:false,message:'This photo is already in this gallery.'});
       next(error);
     }
   }
