@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type DragEvent } from 'react'
-import { ArrowLeft, ImagePlus, UploadCloud, X, Pencil, Check } from 'lucide-react'
+import { ArrowLeft, ImagePlus, UploadCloud, X, Pencil, Check, Trash2 } from 'lucide-react'
 import './Admin.css'
 
 type PendingPhoto = {file:File;preview:string;caption:string;key:string}
@@ -19,6 +19,7 @@ export default function Admin() {
   const [editingCaption,setEditingCaption]=useState<string|null>(null)
   const [captionValue,setCaptionValue]=useState('')
   const [captionBusy,setCaptionBusy]=useState(false)
+  const [deletingPhoto,setDeletingPhoto]=useState<string|null>(null)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
@@ -160,6 +161,20 @@ export default function Admin() {
       setEditingCaption(null);setNotice('Caption updated successfully.')
     }catch(err){setError(err instanceof Error?err.message:'Unable to save caption')}finally{setCaptionBusy(false)}
   }
+  async function deletePhoto(photo:Photo){
+    if(!photo.id||deletingPhoto)return
+    if(!window.confirm(`Permanently delete this photo${photo.alt ? ` (${photo.alt})` : ''}? This cannot be undone.`))return
+    setDeletingPhoto(photo.id);setError('');setNotice('')
+    try{
+      const res=await fetch(`/api/admin/gallery/${photo.id}`,{method:'DELETE'})
+      const body=await res.json().catch(()=>({}))
+      if(!res.ok)throw new Error(body.message||'Unable to delete photo')
+      setPhotos(prev=>prev.filter(item=>item.id!==photo.id))
+      setNotice('Photo deleted successfully.')
+      await refreshSites()
+    }catch(err){setError(err instanceof Error?err.message:'Unable to delete photo')}
+    finally{setDeletingPhoto(null)}
+  }
   async function handleUpload(event:FormEvent<HTMLFormElement>){
     event.preventDefault();if(!queue.length)return
     setBusy(true);setError('');setNotice('')
@@ -226,8 +241,8 @@ export default function Admin() {
           </section>
           <section className="admin-panel" aria-labelledby="gallery-title">
             <div className="admin-gallery-heading"><h2 id="gallery-title">Gallery photos</h2><span>{photos.length} shown</span></div>
-            {galleryError ? <p className="admin-hint">Unable to load the gallery. Refresh the page to try again.</p> : photos.length === 0 ? <div className="admin-empty"><ImagePlus size={30}/><p>No photos uploaded yet.</p></div> : <div className="admin-photo-grid">{photos.map(photo => <div key={photo.id || photo.src} className="admin-thumb"><img src={photo.src} alt={photo.alt || 'Graduation photograph'} loading="lazy" />{editingCaption===photo.id?<div className="admin-caption-editor"><input maxLength={200} aria-label="Edit photo caption" value={captionValue} onChange={e=>setCaptionValue(e.target.value)}/><button type="button" disabled={captionBusy} onClick={()=>void saveCaption(photo)}><Check size={15}/> Save</button><button type="button" onClick={()=>setEditingCaption(null)}>Cancel</button></div>:<div className="admin-caption-row"><span>{photo.alt||'Graduation photograph'}</span><button type="button" onClick={()=>{setEditingCaption(photo.id||null);setCaptionValue(photo.alt||'')}} disabled={!photo.id}><Pencil size={14}/> Edit</button></div>}</div>)}</div>}
-            <p className="admin-hint">Captions can be edited at any time. Deleting photos is not yet available.</p>
+            {galleryError ? <p className="admin-hint">Unable to load the gallery. Refresh the page to try again.</p> : photos.length === 0 ? <div className="admin-empty"><ImagePlus size={30}/><p>No photos uploaded yet.</p></div> : <div className="admin-photo-grid">{photos.map(photo => <div key={photo.id || photo.src} className="admin-thumb"><img src={photo.src} alt={photo.alt || 'Graduation photograph'} loading="lazy" />{editingCaption===photo.id?<div className="admin-caption-editor"><input maxLength={200} aria-label="Edit photo caption" value={captionValue} onChange={e=>setCaptionValue(e.target.value)}/><button type="button" disabled={captionBusy} onClick={()=>void saveCaption(photo)}><Check size={15}/> Save</button><button type="button" onClick={()=>setEditingCaption(null)}>Cancel</button></div>:<div className="admin-caption-row"><span>{photo.alt||'Graduation photograph'}</span><button type="button" onClick={()=>{setEditingCaption(photo.id||null);setCaptionValue(photo.alt||'')}} disabled={!photo.id}><Pencil size={14}/> Edit</button><button type="button" className="admin-delete-photo" disabled={!photo.id||deletingPhoto===photo.id} onClick={()=>void deletePhoto(photo)}><Trash2 size={14}/> {deletingPhoto===photo.id?"Deleting…":"Delete"}</button></div>}</div>)}</div>}
+            <p className="admin-hint">Edit captions or permanently delete unwanted photos. Deletion requires confirmation.</p>
           </section>
         <section className="admin-panel admin-sites-panel" aria-labelledby="sites-title">
           <div className="admin-gallery-heading"><h2 id="sites-title">Graduation websites</h2><button type="button" className="admin-small-btn" onClick={() => void refreshSites()}>Load sites</button></div>
