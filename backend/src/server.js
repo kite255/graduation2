@@ -418,6 +418,15 @@ app.post('/api/admin/sites/:id/hero', requireAdmin, upload.single('image'), asyn
   } catch(err) {if(saved)await unlink(destination).catch(()=>{});next(err)}
 });
 
+app.patch('/api/admin/gallery/:id',requireAdmin,async(req,res,next)=>{
+ try{
+  if(typeof req.body.alt!=='string'||req.body.alt.trim().length>200)return res.status(400).json({message:'Caption must be 200 characters or less'});
+  const {rows}=await pool.query('UPDATE gallery_images SET alt_text=$1 WHERE id=$2 RETURNING id,alt_text AS alt',[req.body.alt.trim(),req.params.id]);
+  if(!rows.length)return res.status(404).json({message:'Photo not found'});
+  res.json({success:true,image:rows[0]});
+ }catch(err){next(err)}
+});
+
 // ========================================
 // ADMINISTRATOR GALLERY UPLOAD
 // ========================================
