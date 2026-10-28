@@ -251,6 +251,24 @@ app.get('/api/sites/:slug/gallery', async (req, res, next) => {
     res.json(rows.map(image => ({id:image.id,src:'/uploads/gallery/'+encodeURIComponent(image.filename),alt:image.alt_text,createdAt:image.created_at})));
   } catch (err) { next(err); }
 });
+app.post('/api/sites/:slug/rsvp', async (req,res,next) => {
+  try {
+    const site = await resolveSite(req,req.params.slug);
+    if (!site) return res.status(404).json({message:'Website not available'});
+    const name=String(req.body.name || '').trim();
+    const attending=req.body.attending;
+    const message=String(req.body.message || '').trim();
+    if(!name || name.length>120 || typeof attending!=='boolean' || message.length>1200) return res.status(400).json({message:'Enter your name and attendance choice'});
+    await pool.query('INSERT INTO graduation_rsvps(id,site_id,guest_name,attending,message) VALUES($1,$2,$3,$4,$5)',[randomUUID(),site.id,name,attending,message]);
+    res.status(201).json({success:true,message:'Thank you for responding'});
+  } catch(err){next(err)}
+});
+app.get('/api/admin/sites/:id/rsvps',requireAdmin,async(req,res,next)=>{
+  try {
+    const {rows}=await pool.query('SELECT id,guest_name AS "guestName",attending,message,created_at AS "createdAt" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 500',[req.params.id]);
+    res.json(rows);
+  } catch(err){next(err)}
+});
 app.get('/api/admin/sites', requireAdmin, async (_req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, message, hero_image AS "heroImageFilename", status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt" FROM graduation_sites ORDER BY created_at DESC');
