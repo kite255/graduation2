@@ -58,3 +58,5 @@
 .admin-caption-row .admin-delete-photo{color:#a02e39;border-color:#edc7cd}.admin-caption-row .admin-delete-photo:hover{background:#fff0f1}.admin-caption-row button:disabled{opacity:.5;cursor:not-allowed}
 
 .admin-wish-entry{margin-top:7px;overflow-wrap:anywhere}.admin-wish-actions,.admin-wish-editor>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}.admin-wish-editor textarea{width:100%;border:1px solid #d7c5c8;border-radius:7px;padding:10px;font:inherit;font-size:12px;line-height:1.6;resize:vertical}.admin-wish-editor button{background:#742b3a;color:#fff;border:0;border-radius:5px;padding:9px 13px;font-size:11px;cursor:pointer}.admin-wish-editor button+button{background:#eee3e0;color:#60313f}.admin-wish-editor button:disabled{opacity:.55;cursor:not-allowed}
+
+.admin-gift-editor{display:grid;gap:8px;padding:14px;background:#faf3ef;border:1px solid #eaddd7;border-radius:9px;margin:12px 0}.admin-gift-editor input{width:100%;min-width:0;padding:10px;border:1px solid #d8c6c2;border-radius:6px;font:inherit}
