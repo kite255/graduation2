@@ -170,8 +170,8 @@ function App() {
         <nav className={menuOpen ? 'nav open' : 'nav'} aria-label="Main navigation">
           <a onClick={() => setMenuOpen(false)} href="#home">Home</a>
           <a onClick={() => setMenuOpen(false)} href="#details">Event Info</a>
-          {pathSlug && <a onClick={() => setMenuOpen(false)} href="#wishes">Wishes</a>}
           <a onClick={() => setMenuOpen(false)} href="#moments">Gallery</a>
+          {pathSlug && <a onClick={() => setMenuOpen(false)} href="#wishes">Wishes</a>}
           <a className="nav-cta" onClick={() => setMenuOpen(false)} href={pathSlug ? "#rsvp" : platformContactUrl} {...(!pathSlug ? {target:"_blank",rel:"noopener noreferrer"} : {})}>{pathSlug ? "RSVP" : "Get Your Website"} <ArrowUpRight size={15}/></a>
         </nav>
       </header>
