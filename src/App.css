@@ -368,3 +368,26 @@ body{background:var(--ivory)}
 .platform-art-year{letter-spacing:3px;font-size:10px;font-weight:700}
 .platform-art-note{z-index:2}
 @media(max-width:650px){.platform-art-emblem{width:min(65%,260px)}.platform-art-emblem>svg{width:90px;height:90px}}
+
+/* Separate platform and white-label graduation footers */
+.platform-footer{background:#352529;color:#f9efed;padding-top:48px}
+.platform-footer-main{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(120px,.8fr) minmax(140px,.9fr);gap:55px;padding-bottom:44px}
+.platform-footer-brand{display:flex;align-items:center;gap:12px;color:#fff;font-size:12px;letter-spacing:1.15px}
+.platform-footer-brand svg{color:#dfbdc1}
+.platform-footer-brand small{display:block;font-size:9px;letter-spacing:2.4px;color:#cfa5ad;margin-top:4px}
+.platform-footer-about p{margin:20px 0 0;color:#dec9ca;font-size:13px;line-height:1.6}
+.platform-footer-links,.platform-footer-contact{display:flex;flex-direction:column;align-items:flex-start;gap:13px}
+.platform-footer-links>strong,.platform-footer-contact>strong{font-size:13px;color:#fff;margin-bottom:5px}
+.platform-footer-links a,.platform-footer-contact span{font-size:12px;color:#d4bfc0}
+.platform-footer-contact a{color:#fff;font-size:15px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.platform-footer a:hover{text-decoration:underline;text-underline-offset:4px}
+.platform-footer .footer-bottom{border-top:1px solid #655052;padding-top:21px;padding-bottom:22px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:15px}
+.platform-footer .footer-bottom a{color:#d4bfc0;font-size:11px}
+.graduate-footer{background:#352529;padding:36px 0 26px;text-align:center;color:#f9efed}
+.graduate-footer-inner{display:flex;flex-direction:column;align-items:center;gap:9px}
+.graduate-footer-inner>svg{color:#e2bfc3}
+.graduate-footer-inner>strong{font:500 clamp(20px,3vw,26px) 'Playfair Display',Georgia,serif}
+.graduate-footer-inner p{font-size:12px;color:#dfc7c9;margin:0}
+.graduate-footer-inner>span{font-size:10px;color:#bca7aa}
+.graduate-footer-inner>a{font-size:11px;color:#dfc7c9;margin-top:7px}
+@media(max-width:650px){.platform-footer{padding-top:37px}.platform-footer-main{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 20px;padding-bottom:30px}.platform-footer-about{grid-column:1/-1}.platform-footer .footer-bottom{flex-wrap:wrap}.graduate-footer{padding:31px 0 24px}}
