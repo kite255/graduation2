@@ -82,3 +82,6 @@
 .admin-rsvp-tools button{min-height:40px}
 
 .admin-gift-methods{display:grid;gap:10px;padding:13px;background:#fffaf8;border:1px solid #e8d8d7;border-radius:12px}.admin-gift-method{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:7px}.admin-gift-method input{min-width:0;padding:9px;border:1px solid #ddc9ca;border-radius:7px}.admin-gift-method-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-gift-methods button{min-height:36px;padding:7px 10px;border:1px solid #d8bdc1;border-radius:7px;background:#fff;color:#6f3041;cursor:pointer}@media(max-width:700px){.admin-gift-method{grid-template-columns:1fr}.admin-gift-method input{width:100%}}
+
+/* Focused admin navigation */
+.admin-section-tabs{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0 18px;border-bottom:1px solid #e8d8d8;padding-bottom:12px}.admin-section-tabs button{padding:12px 18px;min-height:44px;border:1px solid #ddc9cb;background:#fffaf8;color:#693b45;border-radius:9px;font-weight:700;cursor:pointer}.admin-section-tabs button.active{background:#742b3a;color:#fff;border-color:#742b3a}.admin-section-tabs button:focus-visible{outline:3px solid #a7717d;outline-offset:2px}@media(max-width:650px){.admin-section-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.admin-section-tabs button{padding:10px 5px;font-size:11px}}
