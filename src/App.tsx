@@ -27,16 +27,6 @@ function App() {
   const musicRef=useRef<HTMLAudioElement|null>(null)
   const [musicEnabled,setMusicEnabled]=useState(false)
   const [currentSection,setCurrentSection]=useState('hero')
-  useEffect(()=>{
-    if(!site?.musicFile||!musicEnabled)return
-    const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(visible)setCurrentSection(visible.target.id)},{threshold:[.1,.3,.5,.7]})
-    document.querySelectorAll('#home,#details,#moments,#rsvp,#wishes,#gifts').forEach(node=>observer.observe(node))
-    return ()=>observer.disconnect()
-  },[site?.musicFile,musicEnabled])
-  useEffect(()=>{
-    const player=musicRef.current;if(!player)return
-    if(musicEnabled&&(site?.musicSection==='all'||site?.musicSection===currentSection)){void player.play().catch(()=>setMusicEnabled(false))}else player.pause()
-  },[musicEnabled,currentSection,site?.musicFile,site?.musicSection])
   const [menuOpen, setMenuOpen] = useState(false)
   const [linkCopied,setLinkCopied]=useState(false)
   const [giftCopied,setGiftCopied]=useState(false)
@@ -104,6 +94,16 @@ function App() {
   const galleryPhotos=gallery.filter((photo,index,all)=>all.findIndex(item=>item.src===photo.src)===index)
   useEffect(()=>{if(activePhoto===null&&!showAllPhotos)return;function onKey(e:KeyboardEvent){if(e.key==='Escape'){setActivePhoto(null);setShowAllPhotos(false)}else if(activePhoto!==null&&e.key==='ArrowRight')setActivePhoto(i=>i===null?null:(i+1)%galleryPhotos.length);else if(activePhoto!==null&&e.key==='ArrowLeft')setActivePhoto(i=>i===null?null:(i+galleryPhotos.length-1)%galleryPhotos.length)}window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey)},[activePhoto,showAllPhotos,galleryPhotos.length])
   const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null; heroImage: string | null; giftPhone:string|null;giftName:string|null;giftProvider:string|null;giftMethods?:{provider:string;account:string;name:string}[];musicFile?:string|null;musicSection?:string;theme?:string;showGallery?:boolean;showWishes?:boolean;showGifts?:boolean;showCountdown?:boolean } | null>(null)
+  useEffect(()=>{
+    if(!site?.musicFile||!musicEnabled)return
+    const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(visible)setCurrentSection(visible.target.id)},{threshold:[.1,.3,.5,.7]})
+    document.querySelectorAll('#home,#details,#moments,#rsvp,#wishes,#gifts').forEach(node=>observer.observe(node))
+    return ()=>observer.disconnect()
+  },[site?.musicFile,musicEnabled])
+  useEffect(()=>{
+    const player=musicRef.current;if(!player)return
+    if(musicEnabled&&(site?.musicSection==='all'||site?.musicSection===currentSection)){void player.play().catch(()=>setMusicEnabled(false))}else player.pause()
+  },[musicEnabled,currentSection,site?.musicFile,site?.musicSection])
   const [countdownNow,setCountdownNow]=useState(Date.now())
   useEffect(()=>{
     if(!site?.showCountdown||!site.eventDate)return
