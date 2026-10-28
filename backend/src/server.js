@@ -299,6 +299,16 @@ app.patch('/api/admin/sites/:id/rsvps/:rsvpId/wish',requireAdmin,async(req,res,n
   res.json({success:true});
  }catch(err){next(err)}
 });
+app.patch('/api/admin/sites/:id/rsvps/:rsvpId/message',requireAdmin,async(req,res,next)=>{
+ try{
+  if(typeof req.body.message!=='string')return res.status(400).json({message:'Wish text is required'});
+  const message=req.body.message.trim();
+  if(!message || message.length>1200)return res.status(400).json({message:'Wish must contain 1 to 1200 characters'});
+  const {rows}=await pool.query('UPDATE graduation_rsvps SET message=$1 WHERE id=$2 AND site_id=$3 AND message<>\'\' RETURNING id,message',[message,req.params.rsvpId,req.params.id]);
+  if(!rows.length)return res.status(404).json({message:'Wish not found'});
+  res.json({success:true,wish:rows[0]});
+ }catch(err){next(err)}
+});
 app.get('/api/admin/sites/:id/rsvp-summary',requireAdmin,async(req,res,next)=>{
  try {
   const {rows}=await pool.query('SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE attending)::int AS attending, COUNT(*) FILTER (WHERE attending=FALSE)::int AS declined FROM graduation_rsvps WHERE site_id=$1',[req.params.id]);
