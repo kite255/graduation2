@@ -226,6 +226,44 @@ async function resolveSite(req, explicitSlug = null) {
   const result = await pool.query('SELECT * FROM graduation_sites WHERE slug = $1 AND status = $2 AND (expires_at IS NULL OR expires_at >= CURRENT_DATE)', [slug, 'active']);
   return result.rows[0] || null;
 }
+// HTML metadata for link previews. The same Vite app runs after the browser loads.
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+})[character]);
+app.get('/_document', async (req,res,next) => {
+  try {
+    const requestedPath=String(req.headers['x-original-uri']||'/').split('?')[0];
+    const pathMatch=requestedPath.match(/^\/s\/([a-z0-9-]+)\/?$/);
+    const slug=pathMatch?.[1]||siteSlug(req);
+    const site=slug?await resolveSite(req,slug):null;
+    if(slug&&!site)return res.status(404).send('Graduation website not available');
+    const frontend=await fetch('http://frontend/index.html');
+    if(!frontend.ok)throw new Error('Frontend HTML unavailable');
+    let html=await frontend.text();
+    const proto=req.headers['x-forwarded-proto']==='https'?'https':'http';
+    const hostname=String(req.headers.host||'').replace(/[^a-zA-Z0-9.:-]/g,'');
+    const url=proto+'://'+hostname+requestedPath;
+    const title=site?`${site.graduate_name} | Graduation Celebration`:'Personalized Graduation Websites | Graduation Celebration';
+    const description=site
+      ?`Join us in celebrating ${site.graduate_name}'s graduation${site.event_date?' and special milestone':''}. View photos, event details and heartfelt wishes.`
+      :'A personal place for graduation memories, guest RSVPs and heartfelt wishes.';
+    const image=site?.hero_image ? proto+'://'+hostname+'/uploads/hero/'+encodeURIComponent(site.hero_image):null;
+    const tags=[
+      `<title>${escapeHtml(title)}</title>`,
+      `<meta name="description" content="${escapeHtml(description)}" />`,
+      `<meta property="og:type" content="website" />`,
+      `<meta property="og:title" content="${escapeHtml(title)}" />`,
+      `<meta property="og:description" content="${escapeHtml(description)}" />`,
+      `<meta property="og:url" content="${escapeHtml(url)}" />`,
+      `<meta name="twitter:card" content="${image?'summary_large_image':'summary'}" />`,
+      `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
+      ...(image?[`<meta property="og:image" content="${escapeHtml(image)}" />`,`<meta name="twitter:image" content="${escapeHtml(image)}" />`]:[]),
+    ].join('\n');
+    html=html.replace(/<title>[^<]*<\/title>/,'').replace(/<meta name="description"[^>]*\/>/,'').replace('</head>',tags+'\n</head>');
+    res.setHeader('Cache-Control','public, max-age=60');
+    res.type('html').send(html);
+  }catch(err){next(err)}
+});
 app.get('/api/site', async (req, res, next) => {
   try {
     const slug = siteSlug(req);
