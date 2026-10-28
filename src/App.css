@@ -467,3 +467,12 @@ body{background:var(--ivory)}
 .graduate-theme-navy .guest-quick-actions a,.graduate-theme-navy .guest-quick-actions button{color:var(--graduate-accent)}
 .graduate-countdown{display:inline-flex;align-items:center;gap:9px;border:1px solid #e3cdcb;border-radius:8px;padding:9px 12px;background:#fff8f4;color:#783849;font-size:12px;font-weight:700}
 @media(max-width:650px){.graduate-countdown{font-size:11px;padding:8px 10px}}
+
+/* Live graduation countdown: compact four-unit display */
+.site-shell:not(.platform-site) .graduate-countdown{display:block;width:min(100%,440px);padding:14px 16px;border:1px solid #e4c9c7;border-radius:14px;background:#fff9f6;color:#742b3a;margin:16px 0}
+.graduate-countdown-title{display:block;text-align:center;font-size:10px;font-weight:700;letter-spacing:1.5px;margin-bottom:10px}
+.graduate-countdown-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.graduate-countdown-unit{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;background:#ffffffa8;border-radius:8px}
+.graduate-countdown-unit strong{font-variant-numeric:tabular-nums;font-size:clamp(21px,3vw,31px);line-height:1.2;font-weight:700}
+.graduate-countdown-unit span{font-size:10px;letter-spacing:.4px}
+@media(max-width:650px){.site-shell:not(.platform-site) .graduate-countdown{padding:12px 10px}.graduate-countdown-unit strong{font-size:clamp(19px,5.4vw,27px)}.graduate-countdown-unit span{font-size:9px}}
