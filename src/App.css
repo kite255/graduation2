@@ -423,3 +423,24 @@ body{background:var(--ivory)}
 .site-shell:not(.platform-site) .guest-quick-actions{margin-top:14px;gap:8px}
 .site-shell:not(.platform-site) .detail-map-link{min-height:28px;display:inline-flex;align-items:center}
 @media(max-width:650px){.site-shell:not(.platform-site) .details-section{padding-bottom:18px}.site-shell:not(.platform-site) .gallery-section{padding-top:27px}.site-shell:not(.platform-site) .guest-quick-actions{margin-top:12px}}
+
+/* Subtle motion — no external animation dependencies */
+@keyframes graduation-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes graduation-fade{from{opacity:.35;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:no-preference){
+  .platform-hero-copy>.overline,.hero-content>.eyebrow{animation:graduation-rise .65s ease-out both}
+  .platform-hero h1,.site-shell:not(.platform-site) .hero h1{animation:graduation-rise .75s .1s ease-out both}
+  .platform-hero-copy>p,.site-shell:not(.platform-site) .hero-content>p{animation:graduation-rise .7s .19s ease-out both}
+  .platform-hero-actions,.site-shell:not(.platform-site) .hero-actions{animation:graduation-rise .7s .27s ease-out both}
+  .platform-hero-art,.site-shell:not(.platform-site) .hero-visual{animation:graduation-fade .95s ease-out both}
+  .reveal-on-scroll{opacity:0;transform:translateY(19px);transition:opacity .72s ease,transform .72s cubic-bezier(.22,1,.36,1)}
+  .reveal-on-scroll.is-revealed{opacity:1;transform:none}
+  .platform-feature-grid article,.detail-card,.gallery-photo,.gifts-inner{transition:transform .25s ease,box-shadow .25s ease}
+  .platform-feature-grid article:hover,.detail-card:hover,.gallery-photo:hover{transform:translateY(-4px)}
+  .button,.nav-cta,.platform-contact-action{transition:background .2s ease,transform .2s ease,box-shadow .2s ease}
+  .button:hover,.nav-cta:hover,.platform-contact-action:hover{transform:translateY(-2px);box-shadow:0 9px 20px #47212c22}
+}
+@media(prefers-reduced-motion:reduce){
+  .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
+  .platform-hero-copy *, .hero-content *, .platform-hero-art,.hero-visual{animation:none!important}
+}
