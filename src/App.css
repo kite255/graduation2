@@ -476,3 +476,11 @@ body{background:var(--ivory)}
 .graduate-countdown-unit strong{font-variant-numeric:tabular-nums;font-size:clamp(21px,3vw,31px);line-height:1.2;font-weight:700}
 .graduate-countdown-unit span{font-size:10px;letter-spacing:.4px}
 @media(max-width:650px){.site-shell:not(.platform-site) .graduate-countdown{padding:12px 10px}.graduate-countdown-unit strong{font-size:clamp(19px,5.4vw,27px)}.graduate-countdown-unit span{font-size:9px}}
+
+/* Hero attendance choices: immediate, compact and touch friendly */
+.hero-attendance-choices{display:flex;align-items:center;flex-wrap:wrap;gap:8px;max-width:510px}
+.hero-attendance-choices>span{flex-basis:100%;font-size:10px;letter-spacing:1.7px;font-weight:700;color:#8b5560;margin-bottom:3px}
+.hero-attendance-choices button{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:41px;border:1px solid #d7b9bb;border-radius:24px;background:#fffaf6;color:#70293c;font-size:11px;font-weight:700;padding:10px 14px;cursor:pointer}
+.hero-attendance-choices button.selected,.hero-attendance-choices button:hover{background:#742b3a;color:#fff;border-color:#742b3a}
+.hero-attendance-choices button:focus-visible{outline:3px solid #a87380;outline-offset:3px}
+@media(max-width:650px){.hero-attendance-choices{gap:7px}.hero-attendance-choices button{min-height:44px;padding:10px 12px}}
