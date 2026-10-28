@@ -25,10 +25,25 @@ function App() {
     e.preventDefault()
     if(!pathSlug || attending===null)return
     setSending(true);setRsvpStatus('')
-    try {const r=await fetch(`/api/sites/${pathSlug}/rsvp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:guestName,attending,message:wish})});if(!r.ok)throw new Error('Unable to save response');setRsvpStatus('Thank you! Your response has been received.');setGuestName('');setWish('');setAttending(null)}catch{setRsvpStatus('Unable to save your response. If you recently submitted, please do not submit again yet.')}finally{setSending(false)}
+    try {const r=await fetch(`/api/sites/${pathSlug}/rsvp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:guestName,attending,message:wish})});if(!r.ok)throw new Error('Unable to save response');setRsvpStatus('Thank you! Your response has been received.');setGuestName('');setWish('');setAttending(null);setWishPage(1)}catch{setRsvpStatus('Unable to save your response. If you recently submitted, please do not submit again yet.')}finally{setSending(false)}
   }
   const [publicWishes,setPublicWishes]=useState<Wish[]>([])
-  useEffect(()=>{if(pathSlug)fetch(`/api/sites/${pathSlug}/wishes`).then(r=>r.ok?r.json():[]).then(data=>{if(Array.isArray(data))setPublicWishes(data)}).catch(()=>{})},[pathSlug])
+  const [wishPage,setWishPage]=useState(1)
+  const [wishTotal,setWishTotal]=useState(0)
+  const [wishPages,setWishPages]=useState(0)
+  const [wishesLoading,setWishesLoading]=useState(false)
+  const [expandedWishes,setExpandedWishes]=useState<number[]>([])
+  useEffect(()=>{
+    if(!pathSlug)return
+    const controller=new AbortController()
+    setWishesLoading(true)
+    fetch(`/api/sites/${pathSlug}/wishes?page=${wishPage}`,{signal:controller.signal})
+      .then(r=>{if(!r.ok)throw new Error('Wishes unavailable');return r.json()})
+      .then(data=>{if(Array.isArray(data.items)){setPublicWishes(data.items);setWishTotal(data.total||0);setWishPages(data.totalPages||0);setExpandedWishes([])}})
+      .catch(()=>{})
+      .finally(()=>{if(!controller.signal.aborted)setWishesLoading(false)})
+    return ()=>controller.abort()
+  },[pathSlug,wishPage])
   const [gallery, setGallery] = useState<GalleryImage[]>([])
   const [galleryError, setGalleryError] = useState(false)
   const [site, setSite] = useState<{ graduateName: string; eventDate: string | null; eventTime: string | null; venue: string | null; message: string | null; heroImage: string | null } | null>(null)
@@ -92,8 +107,12 @@ function App() {
         </section>
 
 {pathSlug && site && <section className="rsvp-section container" id="rsvp"><div className="section-heading"><span className="overline">YOU ARE INVITED</span><h2>Will you <em>join us?</em></h2><p>Let {site.graduateName} know whether you'll attend the celebration.</p></div><form className="rsvp-form" onSubmit={submitRsvp}><label htmlFor="guest-name">Your name</label><input id="guest-name" maxLength={120} required value={guestName} onChange={e=>setGuestName(e.target.value)} placeholder="Your full name"/><span className="rsvp-label">Attendance</span><div className="rsvp-choices"><button type="button" aria-pressed={attending===true} className={attending===true?'selected':''} onClick={()=>setAttending(true)}>I'll attend</button><button type="button" aria-pressed={attending===false} className={attending===false?'selected':''} onClick={()=>setAttending(false)}>I can't attend</button></div><label htmlFor="guest-wish">A message for the graduate (optional)</label><textarea id="guest-wish" value={wish} onChange={e=>setWish(e.target.value)} maxLength={1200} rows={3} placeholder="Send your congratulations or best wishes"/><p className="rsvp-privacy">Your attendance choice stays private. Your name and message will be displayed publicly unless removed by the administrator.</p><input name="website" className="rsvp-honeypot" autoComplete="off" tabIndex={-1} aria-hidden="true"/><button className="button primary" type="submit" disabled={attending===null||sending}>{sending?'Sending…':'Send response'}</button>{rsvpStatus&&<p role="status">{rsvpStatus}</p>}</form></section>}
-        {pathSlug && site && <section className="wishes-section container" id="wishes"><div className="section-heading"><span className="overline">WORDS OF CELEBRATION</span><h2>Heartfelt <em>wishes.</em></h2><p>Kind words shared with {site.graduateName}.</p></div>{publicWishes.length ? <div className="wishes-grid">{publicWishes.map((w,i)=><blockquote className="wish-card" key={i}><p>{w.message}</p><footer>{w.guestName}</footer></blockquote>)}</div>:<p className="wishes-empty">Be the first to share your congratulations.</p>}</section>}
-        <section className="gallery-section container" id="moments"><div className="gallery-intro"><div><span className="overline">OUR FAVORITE MEMORIES</span><h2>Moments that <em>matter.</em></h2></div><p>A glimpse into the journey. Photos will appear here as they're added.</p></div><div className="gallery-grid">{gallery.map(photo => <div className="gallery-photo" key={photo.id || photo.src}><img loading="lazy" src={photo.src} alt={photo.alt || "Graduation memory"} /></div>)}</div>{gallery.length === 0 && <div className="gallery-empty" role="status"><GraduationCap size={30}/><strong>{galleryError ? "Gallery temporarily unavailable" : "Memories are coming soon"}</strong><p>{galleryError ? "Please check back shortly." : "Photos will appear here once they are added."}</p></div>}</section>
+        {pathSlug && site && <section className="wishes-section container" id="wishes">
+          <div className="section-heading"><span className="overline">WORDS OF CELEBRATION</span><h2>Heartfelt <em>wishes.</em></h2><p>Kind words shared with {site.graduateName}.{wishTotal>0 && ` ${wishTotal} messages.`}</p></div>
+          {publicWishes.length ? <div className="wishes-grid">{publicWishes.map((w,i)=><blockquote className="wish-card" key={w.createdAt + w.guestName}><p>{expandedWishes.includes(i)||w.message.length<=230?w.message:w.message.slice(0,230).trimEnd()+'…'}</p>{w.message.length>230&&<button type="button" className="wish-expand" onClick={()=>setExpandedWishes(prev=>prev.includes(i)?prev.filter(x=>x!==i):[...prev,i])}>{expandedWishes.includes(i)?'Read less':'Read more'}</button>}<footer>{w.guestName}</footer></blockquote>)}</div>:<p className="wishes-empty">{wishesLoading?'Loading wishes…':'Be the first to share your congratulations.'}</p>}
+          {wishPages>1&&<div className="wishes-pagination"><button type="button" disabled={wishPage===1||wishesLoading} onClick={()=>setWishPage(p=>p-1)}>Previous</button><span>Page {wishPage} of {wishPages}</span><button type="button" disabled={wishPage>=wishPages||wishesLoading} onClick={()=>setWishPage(p=>p+1)}>Next</button></div>}
+        </section>}
+                <section className="gallery-section container" id="moments"><div className="gallery-intro"><div><span className="overline">OUR FAVORITE MEMORIES</span><h2>Moments that <em>matter.</em></h2></div><p>A glimpse into the journey. Photos will appear here as they're added.</p></div><div className="gallery-grid">{gallery.map(photo => <div className="gallery-photo" key={photo.id || photo.src}><img loading="lazy" src={photo.src} alt={photo.alt || "Graduation memory"} /></div>)}</div>{gallery.length === 0 && <div className="gallery-empty" role="status"><GraduationCap size={30}/><strong>{galleryError ? "Gallery temporarily unavailable" : "Memories are coming soon"}</strong><p>{galleryError ? "Please check back shortly." : "Photos will appear here once they are added."}</p></div>}</section>
       </main>
       <footer className="footer"><div className="container footer-inner"><div className="footer-brand"><GraduationCap size={25}/><strong>THE GRADUATION</strong><span>CELEBRATION</span></div><p>Celebrating milestones. Creating memories.</p><a href="#home">Back to top</a></div><div className="container footer-bottom"><span>© 2026 Graduation Celebration. All rights reserved.</span><span>Made for a moment worth remembering.</span></div></footer>
     </div>
