@@ -43,7 +43,7 @@ export default function Admin() {
 
   async function refreshGallery() {
     try {
-      const res = await fetch('/api/gallery', { cache: 'no-store' })
+      const res = await fetch(`/api/admin/gallery${siteId ? `?siteId=${encodeURIComponent(siteId)}` : ''}`, { cache: 'no-store' })
       if (!res.ok) throw new Error('Gallery could not be loaded.')
       const items: Photo[] = await res.json()
       if (!Array.isArray(items)) throw new Error('Unexpected gallery response.')
@@ -57,10 +57,11 @@ export default function Admin() {
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(v => {
       if (!v.authenticated) { window.location.replace('/admin/login'); return }
-      setAuthenticated(true); void refreshGallery()
+      setAuthenticated(true)
     }).catch(() => window.location.replace('/admin/login')).finally(() => setChecking(false))
   }, [])
   useEffect(() => { if (authenticated) void refreshSites() }, [authenticated])
+  useEffect(() => { if (authenticated) void refreshGallery() }, [authenticated,siteId])
 
   async function refreshSites() {
     if (!authenticated) return
