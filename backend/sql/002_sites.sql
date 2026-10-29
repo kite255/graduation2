@@ -58,3 +58,6 @@ ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS maps_url TEXT;
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS guest_share_token VARCHAR(80) UNIQUE;
 
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS guest_share_short VARCHAR(24) UNIQUE;
+
+ALTER TABLE graduation_rsvps ADD COLUMN IF NOT EXISTS graduate_reply TEXT;
+ALTER TABLE graduation_rsvps ADD COLUMN IF NOT EXISTS graduate_replied_at TIMESTAMPTZ;
