@@ -348,6 +348,15 @@ app.patch('/api/admin/sites/:id/rsvps/:rsvpId/message',requireAdmin,async(req,re
   res.json({success:true,wish:rows[0]});
  }catch(err){next(err)}
 });
+app.delete('/api/admin/sites/:id/wishes',requireAdmin,async(req,res,next)=>{
+ try{
+  const ids=req.body?.ids;
+  if(!Array.isArray(ids)||ids.length===0||ids.length>500||ids.some(id=>typeof id!=='string'||!/^[0-9a-f-]{36}$/i.test(id)))return res.status(400).json({message:'Provide 1 to 500 valid wish IDs'});
+  const unique=[...new Set(ids)];
+  const result=await pool.query("UPDATE graduation_rsvps SET message='',wish_approved=FALSE WHERE site_id=$1 AND id=ANY($2::uuid[]) AND message<>'' RETURNING id",[req.params.id,unique]);
+  res.json({success:true,deleted:result.rowCount});
+ }catch(err){next(err)}
+});
 app.get('/api/admin/sites/:id/rsvp-summary',requireAdmin,async(req,res,next)=>{
  try {
   const {rows}=await pool.query('SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE attending)::int AS attending, COUNT(*) FILTER (WHERE attending=FALSE)::int AS declined FROM graduation_rsvps WHERE site_id=$1',[req.params.id]);
