@@ -42,11 +42,12 @@ function App() {
     e.preventDefault()
     if(!pathSlug || (attending===null&&!wish.trim()))return
     setSending(true);setRsvpStatus('')
-    try {const r=await fetch(`/api/sites/${pathSlug}/rsvp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:guestName,attendanceChoice:attending,message:wish})});if(!r.ok){const body=await r.json().catch(()=>({}));throw new Error(body.message||'Unable to save response')}setLastResponse(attending==='yes'?'attending':attending==='no'?'declined':attending==='maybe'?'maybe':'wishes');setRsvpDone(true);setGuestName('');setWish('');setAttending(null);setWishPage(1);window.setTimeout(()=>document.getElementById(site?.showGifts===false?'wishes':'gifts')?.scrollIntoView({behavior:'smooth'}),150)}catch(err){setRsvpStatus(err instanceof Error?err.message:'Unable to save your response.')}finally{setSending(false)}
+    try {const r=await fetch(`/api/sites/${pathSlug}/rsvp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:guestName,attendanceChoice:attending,message:wish})});if(!r.ok){const body=await r.json().catch(()=>({}));throw new Error(body.message||'Unable to save response')}setLastResponse(attending==='yes'?'attending':attending==='no'?'declined':attending==='maybe'?'maybe':'wishes');setRsvpDone(true);setGuestName('');setWish('');setAttending(null);setWishesRefresh(n=>n+1);window.setTimeout(()=>document.getElementById(site?.showGifts===false?'wishes':'gifts')?.scrollIntoView({behavior:'smooth'}),150)}catch(err){setRsvpStatus(err instanceof Error?err.message:'Unable to save your response.')}finally{setSending(false)}
   }
   const [publicWishes,setPublicWishes]=useState<Wish[]>([])
   const [wishTotal,setWishTotal]=useState(0)
   const [wishPages,setWishPages]=useState(0)
+  const [wishesRefresh,setWishesRefresh]=useState(0)
   const [wishesLoading,setWishesLoading]=useState(false)
   const [expandedWishes,setExpandedWishes]=useState<number[]>([])
   const [wishIndex,setWishIndex]=useState(0)
@@ -66,7 +67,7 @@ function App() {
       .catch(()=>{})
       .finally(()=>{if(!controller.signal.aborted)setWishesLoading(false)})
     return ()=>controller.abort()
-  },[pathSlug])
+  },[pathSlug,wishesRefresh])
   useEffect(()=>{
     if(!viewAllWishes||!pathSlug||allWishesPage<1)return
     const controller=new AbortController()
