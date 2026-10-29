@@ -514,3 +514,14 @@ body{background:var(--ivory)}
 .wishes-control-buttons button{min-width:42px;min-height:42px}
 .wishes-view-all{margin-top:14px}
 }
+
+/* Editorial masonry gallery: preserve each photograph's natural aspect ratio. */
+.gallery-grid.gallery-masonry{display:block;columns:3;column-gap:16px}
+.gallery-masonry .gallery-photo{display:block;break-inside:avoid;page-break-inside:avoid;position:relative;width:100%;height:auto!important;min-height:0!important;aspect-ratio:auto!important;margin:0 0 16px;padding:0;border:0;border-radius:12px;overflow:hidden;background:#efe7e2;box-shadow:0 7px 24px #472c2b15;cursor:zoom-in}
+.gallery-masonry .gallery-photo img{display:block;position:static!important;inset:auto!important;width:100%;height:auto!important;aspect-ratio:auto!important;object-fit:contain}
+.gallery-masonry .gallery-photo:focus-visible{outline:3px solid #92465a;outline-offset:3px}
+.gallery-dialog-grid.gallery-masonry-all{display:block;columns:3;column-gap:14px;overflow:auto;padding:20px}
+.gallery-masonry-all .gallery-dialog-photo{display:block;position:relative;break-inside:avoid;page-break-inside:avoid;width:100%;height:auto;aspect-ratio:auto!important;min-height:0;margin:0 0 14px;overflow:hidden;border-radius:11px;background:#efe7e2}
+.gallery-masonry-all .gallery-dialog-photo img{display:block;width:100%;height:auto;object-fit:contain}
+@media(max-width:750px){.gallery-grid.gallery-masonry,.gallery-dialog-grid.gallery-masonry-all{columns:2;column-gap:10px}.gallery-masonry .gallery-photo,.gallery-masonry-all .gallery-dialog-photo{margin-bottom:10px;border-radius:9px}}
+@media(prefers-reduced-motion:reduce){.gallery-masonry .gallery-photo img{transition:none!important}}
