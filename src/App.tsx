@@ -22,7 +22,7 @@ function App() {
   const hostSlug = hostnameSuffix && hostname.endsWith(hostnameSuffix)
     ? hostname.slice(0,-hostnameSuffix.length)
     : null
-  const pathSlug = window.location.pathname.match(/^\/s\/([a-z0-9-]+)\/?$/)?.[1]
+  const pathSlug = window.location.pathname.match(/^\/(?:s\/)?([a-z0-9](?:[a-z0-9_-]{0,61}[a-z0-9])?)\/?$/)?.[1]
     || (hostSlug && /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(hostSlug) && !['www','admin','app','api'].includes(hostSlug) ? hostSlug : null)
   const musicRef=useRef<HTMLAudioElement|null>(null)
   const [musicEnabled,setMusicEnabled]=useState(false)
