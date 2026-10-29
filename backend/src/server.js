@@ -387,9 +387,11 @@ app.delete('/api/admin/sites/:id/guest-link',requireAdmin,async(req,res,next)=>{
 });
 app.get('/api/graduate/guests/:token',async(req,res,next)=>{
  try{
-  const token=String(req.params.token||'');
+  const requested=String(req.params.token||'');
+  const branded=requested.match(/^([a-z0-9-]{3,63})-([a-f0-9]{20})$/);
+  const token=branded?branded[2]:requested;
   if(!/^(?:[a-f0-9]{20}|[a-f0-9]{64})$/.test(token))return res.status(404).json({message:'Link unavailable'});
-  const {rows}=await pool.query("SELECT id,graduate_name FROM graduation_sites WHERE (guest_share_short=$1 OR guest_share_token=$1) AND status='active'",[token]);
+  const {rows}=await pool.query("SELECT id,graduate_name FROM graduation_sites WHERE (guest_share_short=$1 OR guest_share_token=$1) AND status='active' AND ($2::text IS NULL OR slug=$2)",[token,branded?branded[1]:null]);
   if(!rows.length)return res.status(404).json({message:'Link unavailable'});
   const site=rows[0];
   const responses=await pool.query("SELECT guest_name AS \"guestName\",attendance_choice AS \"attendanceChoice\",attending,message,wish_approved AS \"wishApproved\" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 1000",[site.id]);
