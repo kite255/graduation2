@@ -52,3 +52,5 @@ ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS gift_methods JSONB NOT NUL
 
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS music_file VARCHAR(255);
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS music_section VARCHAR(24) NOT NULL DEFAULT 'hero';
+
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS maps_url TEXT;
