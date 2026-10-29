@@ -167,3 +167,11 @@
 .admin-wish-bulk{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px;background:#fff7f6;border:1px solid #edd9d8;border-radius:9px}.admin-wish-bulk label,.admin-wish-select{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6d4751}.admin-wish-bulk button{border:1px solid #a75c66;background:#fff;color:#8d3447;padding:9px 12px;border-radius:8px;font-weight:700;cursor:pointer}.admin-wish-bulk button:disabled{opacity:.45;cursor:not-allowed}.admin-wish-select{margin-bottom:7px}
 
 .admin-attendance-bulk{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px;border:1px solid #ead5d9;background:#fcf6f7;border-radius:9px}.admin-attendance-bulk label,.admin-attendance-row{display:flex;align-items:center;gap:9px}.admin-attendance-bulk button,.admin-remove-attendance{border:1px solid #bd8390;border-radius:7px;padding:8px 10px;background:white;color:#823748;font-size:11px;cursor:pointer}.admin-attendance-bulk button:disabled,.admin-remove-attendance:disabled{opacity:.5;cursor:not-allowed}.admin-attendance-row{flex-wrap:wrap}.admin-attendance-row strong{font-weight:700}.admin-remove-attendance{margin-left:auto}.admin-attendance-row input[type=checkbox]{width:15px;height:15px;accent-color:#742b3a}
+
+.admin-guest-view-tabs{display:flex;gap:7px;margin:14px 0 16px;padding:5px;border-radius:11px;background:#f7eeec;max-width:460px}
+.admin-guest-view-tabs button{flex:1;min-height:42px;padding:10px;border:0;border-radius:8px;background:transparent;color:#795760;font-size:13px;font-weight:700;cursor:pointer}
+.admin-guest-view-tabs button.active{background:#fff;color:#6d293d;box-shadow:0 2px 8px #38182014}
+.admin-guest-view-tabs button:focus-visible{outline:2px solid #8d4054;outline-offset:2px}
+.admin-guests-content .admin-rsvp-tools{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.admin-guests-content .rsvp-admin-list>p{padding:12px 0}
+@media(max-width:600px){.admin-guest-view-tabs{max-width:none}.admin-guests-content .admin-rsvp-tools{align-items:stretch;flex-direction:column}.admin-guests-content .admin-rsvp-tools>button{align-self:flex-start}}
