@@ -360,6 +360,43 @@ app.get('/api/admin/sites/:id/rsvps',requireAdmin,async(req,res,next)=>{
     res.json(rows);
   } catch(err){next(err)}
 });
+// Shareable graduate-only summary. Anyone holding the secret URL can view it.
+app.post('/api/admin/sites/:id/guest-link',requireAdmin,async(req,res,next)=>{
+ try{
+  const token=randomBytes(32).toString('hex');
+  const {rows}=await pool.query('UPDATE graduation_sites SET guest_share_token=$1 WHERE id=$2 RETURNING guest_share_token',[token,req.params.id]);
+  if(!rows.length)return res.status(404).json({message:'Graduate not found'});
+  res.json({token});
+ }catch(err){next(err)}
+});
+app.get('/api/admin/sites/:id/guest-link',requireAdmin,async(req,res,next)=>{
+ try{
+  const {rows}=await pool.query('SELECT guest_share_token AS token FROM graduation_sites WHERE id=$1',[req.params.id]);
+  if(!rows.length)return res.status(404).json({message:'Graduate not found'});
+  res.json({token:rows[0].token});
+ }catch(err){next(err)}
+});
+app.delete('/api/admin/sites/:id/guest-link',requireAdmin,async(req,res,next)=>{
+ try{
+  const result=await pool.query('UPDATE graduation_sites SET guest_share_token=NULL WHERE id=$1',[req.params.id]);
+  if(!result.rowCount)return res.status(404).json({message:'Graduate not found'});
+  res.json({success:true});
+ }catch(err){next(err)}
+});
+app.get('/api/graduate/guests/:token',async(req,res,next)=>{
+ try{
+  const token=String(req.params.token||'');
+  if(!/^[a-f0-9]{64}$/.test(token))return res.status(404).json({message:'Link unavailable'});
+  const {rows}=await pool.query("SELECT id,graduate_name FROM graduation_sites WHERE guest_share_token=$1 AND status='active'",[token]);
+  if(!rows.length)return res.status(404).json({message:'Link unavailable'});
+  const site=rows[0];
+  const responses=await pool.query("SELECT guest_name AS \"guestName\",attendance_choice AS \"attendanceChoice\",attending,message,wish_approved AS \"wishApproved\" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 1000",[site.id]);
+  const data=responses.rows;
+  const choice=r=>r.attendanceChoice|| (r.attending===true?'yes':r.attending===false?'no':null);
+  res.set('Cache-Control','private, no-store');
+  res.json({graduateName:site.graduate_name,total:data.length,attending:data.filter(r=>choice(r)==='yes').map(r=>r.guestName),maybe:data.filter(r=>choice(r)==='maybe').map(r=>r.guestName),notAttending:data.filter(r=>choice(r)==='no').map(r=>r.guestName),wishes:data.filter(r=>r.message&&r.wishApproved).map(r=>({guestName:r.guestName,message:r.message}))});
+ }catch(err){next(err)}
+});
 app.get('/api/admin/sites', requireAdmin, async (_req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, maps_url AS "mapsUrl", message, gift_phone AS "giftPhone", gift_name AS "giftName", gift_provider AS "giftProvider", gift_methods AS "giftMethods", music_file AS "musicFilename",music_section AS "musicSection", hero_image AS "heroImageFilename", theme,show_gallery AS "showGallery",show_wishes AS "showWishes",show_gifts AS "showGifts",show_countdown AS "showCountdown", status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt", (SELECT COUNT(*)::int FROM graduation_rsvps r WHERE r.site_id = graduation_sites.id) AS "rsvpCount", (SELECT COUNT(*)::int FROM gallery_images g WHERE g.site_id = graduation_sites.id) AS "photoCount" FROM graduation_sites ORDER BY created_at DESC');
