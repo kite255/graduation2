@@ -218,7 +218,7 @@ function siteSlug(req) {
   const suffix = '.' + baseDomain;
   if (!hostname.endsWith(suffix)) return null;
   const slug = hostname.slice(0, -suffix.length);
-  return /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(slug) ? slug : null;
+  return /^[a-z0-9](?:[a-z0-9_-]{0,61}[a-z0-9])?$/.test(slug) ? slug : null;
 }
 async function resolveSite(req, explicitSlug = null) {
   const slug = explicitSlug || siteSlug(req);
@@ -233,7 +233,7 @@ const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character =>
 app.get('/_document', async (req,res,next) => {
   try {
     const requestedPath=String(req.headers['x-original-uri']||'/').split('?')[0];
-    const pathMatch=requestedPath.match(/^\/s\/([a-z0-9-]+)\/?$/);
+    const pathMatch=requestedPath.match(/^\/(?:s\/)?([a-z0-9](?:[a-z0-9_-]{0,61}[a-z0-9])?)\/?$/);
     const slug=pathMatch?.[1]||siteSlug(req);
     const site=slug?await resolveSite(req,slug):null;
     if(slug&&!site)return res.status(404).send('Graduation website not available');
@@ -275,7 +275,7 @@ app.get('/api/site', async (req, res, next) => {
 });
 app.get('/api/sites/:slug', async (req, res, next) => {
   try {
-    if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(req.params.slug)) return res.status(404).json({message:'Website not available'});
+    if (!/^[a-z0-9](?:[a-z0-9_-]{0,61}[a-z0-9])?$/.test(req.params.slug)) return res.status(404).json({message:'Website not available'});
     const site = await resolveSite(req, req.params.slug);
     if (!site) return res.status(404).json({message:'Website not available'});
     res.json({ site: { graduateName: site.graduate_name, slug:site.slug, eventDate:site.event_date, eventTime:site.event_time, venue:site.venue, message:site.message, giftPhone:site.gift_phone, giftName:site.gift_name, giftProvider:site.gift_provider,giftMethods:site.gift_methods||[],musicFile:site.music_file?'/uploads/music/'+encodeURIComponent(site.music_file):null,musicSection:site.music_section, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
@@ -372,7 +372,7 @@ app.post('/api/admin/sites', requireAdmin, async (req, res, next) => {
     if(giftPhone && !/^\+?[0-9][0-9\s-]{7,22}$/.test(String(giftPhone).trim()))return res.status(400).json({message:'Invalid gift phone number'});
     const cleanSlug = String(slug || '').toLowerCase().trim();
     const cleanName = String(graduateName || '').trim();
-    if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(cleanSlug) || ['www', 'admin', 'api', 'app'].includes(cleanSlug) || !cleanName || cleanName.length > 160) {
+    if (!/^[a-z0-9](?:[a-z0-9_-]{0,61}[a-z0-9])?$/.test(cleanSlug) || ['www', 'admin', 'api', 'app', 'login', 'signup', 'dashboard', 'assets', 'uploads', 'support', 'help', 'favicon', 'robots', 's'].includes(cleanSlug) || !cleanName || cleanName.length > 160) {
       return res.status(400).json({ message: 'Enter a valid graduate name and a unique, lowercase subdomain.' });
     }
     if (priceTzs != null && (!Number.isSafeInteger(Number(priceTzs)) || Number(priceTzs) < 0)) return res.status(400).json({message:'Invalid price'});
