@@ -20,3 +20,14 @@
 @media(max-width:650px){.graduate-guest-columns>section{padding:20px}.graduate-guest-group ul{grid-template-columns:1fr 1fr}.graduate-guest-metrics>div{padding:16px}}
 
 .graduate-reply{margin:14px 0;padding:12px 14px;border-left:3px solid #8c485b;background:#fcf4f3;border-radius:0 9px 9px 0}.graduate-reply span{font-size:11px;font-weight:700;color:#742b3a}.graduate-reply p{margin:5px 0 0;white-space:pre-wrap}.graduate-reply-action,.graduate-reply-editor button{margin-top:12px;background:#fff;border:1px solid #cfaeb7;color:#742b3a;border-radius:8px;padding:9px 13px;font-weight:700;cursor:pointer}.graduate-reply-editor{display:grid;gap:8px;margin-top:10px}.graduate-reply-editor textarea{width:100%;padding:12px;border:1px solid #dbc6c8;border-radius:9px;font:inherit;resize:vertical}.graduate-reply-editor>div{display:flex;gap:9px}.graduate-reply-editor button:first-child{background:#742b3a;color:#fff}.graduate-reply-editor button:disabled{opacity:.5}
+
+/* Distinct, elegant wish + graduate response conversation */
+.graduate-guest-wish{padding:18px 0 22px;border-bottom:1px solid #ecdfdc}
+.graduate-wish-message{padding:17px 19px;border-radius:13px;background:#fffaf8;border:1px solid #eaddda}
+.graduate-wish-eyebrow,.graduate-reply span{display:block;font-size:10px!important;font-weight:800;letter-spacing:.13em;color:#8d6871!important}
+.graduate-wish-sender{display:block;font:600 16px Georgia,serif;color:#622e40!important;margin-top:7px}
+.graduate-wish-message p{margin:10px 0 0;color:#4c383d;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.graduate-reply{margin:12px 0 0 24px;padding:15px 18px;border:1px solid #e2c8ce;border-left:3px solid #742b3a;border-radius:10px;background:#f9f0f1}
+.graduate-reply p{margin:8px 0 0;color:#51343d;font-size:14px;line-height:1.65}
+.graduate-reply-action{margin-top:12px;border-radius:999px;padding:9px 15px}
+@media(max-width:650px){.graduate-wish-message{padding:14px 15px}.graduate-reply{margin-left:12px;padding:13px 14px}.graduate-guest-wish{padding:13px 0 19px}}
