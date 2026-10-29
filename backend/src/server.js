@@ -348,6 +348,24 @@ app.patch('/api/admin/sites/:id/rsvps/:rsvpId/message',requireAdmin,async(req,re
   res.json({success:true,wish:rows[0]});
  }catch(err){next(err)}
 });
+app.delete('/api/admin/sites/:id/attendance',requireAdmin,async(req,res,next)=>{
+ try{
+  const ids=req.body?.ids;
+  if(!Array.isArray(ids)||ids.length===0||ids.length>500||ids.some(id=>typeof id!=='string'||!/^[0-9a-f-]{36}$/i.test(id)))return res.status(400).json({message:'Provide 1 to 500 valid attendance IDs'});
+  const unique=[...new Set(ids)];
+  const result=await pool.query(`WITH cleared AS (
+    UPDATE graduation_rsvps SET attendance_choice=NULL, attending=NULL
+    WHERE site_id=$1 AND id=ANY($2::uuid[]) AND (attendance_choice IS NOT NULL OR attending IS NOT NULL)
+    RETURNING id,message
+  ), removed AS (
+    DELETE FROM graduation_rsvps WHERE site_id=$1 AND id IN (SELECT id FROM cleared WHERE COALESCE(TRIM(message),'')='')
+    RETURNING id
+  )
+  SELECT (SELECT COUNT(*)::int FROM cleared) AS cleared_count,(SELECT COUNT(*)::int FROM removed) AS removed_count`,[req.params.id,unique]);
+  res.set('Cache-Control','no-store');
+  res.json({success:true,cleared:result.rows[0].cleared_count});
+ }catch(err){next(err)}
+});
 app.delete('/api/admin/sites/:id/wishes',requireAdmin,async(req,res,next)=>{
  try{
   const ids=req.body?.ids;
