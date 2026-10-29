@@ -31,3 +31,14 @@
 .graduate-reply p{margin:8px 0 0;color:#51343d;font-size:14px;line-height:1.65}
 .graduate-reply-action{margin-top:12px;border-radius:999px;padding:9px 15px}
 @media(max-width:650px){.graduate-wish-message{padding:14px 15px}.graduate-reply{margin-left:12px;padding:13px 14px}.graduate-guest-wish{padding:13px 0 19px}}
+
+/* Compact guest messages and graduate replies */
+.graduate-guest-wish{padding:10px 0 13px}
+.graduate-wish-message{padding:11px 13px;border-radius:9px}
+.graduate-wish-sender{font-size:14px;margin-top:3px}
+.graduate-wish-eyebrow,.graduate-reply span{font-size:9px!important}
+.graduate-wish-message p{margin-top:6px;font-size:13px;line-height:1.5}
+.graduate-reply{margin:7px 0 0 12px;padding:9px 12px;border-radius:8px}
+.graduate-reply p{margin-top:4px;font-size:13px;line-height:1.5}
+.graduate-reply-action{margin-top:8px;padding:7px 11px;font-size:12px}
+@media(max-width:650px){.graduate-guest-wish{padding:9px 0 11px}.graduate-wish-message{padding:10px 12px}.graduate-reply{margin-left:8px;padding:9px 11px}}
