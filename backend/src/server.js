@@ -322,7 +322,7 @@ app.get('/api/sites/:slug/wishes',async(req,res,next)=>{
   const site=await resolveSite(req,req.params.slug);
   if(!site)return res.status(404).json({message:'Website not available'});
   const page=Math.max(1,Math.min(100000,Number.parseInt(String(req.query.page||'1'),10)||1));
-  const limit=3;
+  const limit=req.query.limit==='100'?100:3;
   const offset=(page-1)*limit;
   const countResult=await pool.query("SELECT COUNT(*)::int AS total FROM graduation_rsvps WHERE site_id=$1 AND wish_approved=TRUE AND message<>''",[site.id]);
   const total=countResult.rows[0].total;
