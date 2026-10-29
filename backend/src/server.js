@@ -419,11 +419,27 @@ app.get('/api/graduate/guests/:token',async(req,res,next)=>{
   const {rows}=await pool.query("SELECT id,graduate_name FROM graduation_sites WHERE (guest_share_short=$1 OR guest_share_token=$1) AND status='active' AND ($2::text IS NULL OR slug=$2)",[token,branded?branded[1]:null]);
   if(!rows.length)return res.status(404).json({message:'Link unavailable'});
   const site=rows[0];
-  const responses=await pool.query("SELECT guest_name AS \"guestName\",attendance_choice AS \"attendanceChoice\",attending,message,wish_approved AS \"wishApproved\" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 1000",[site.id]);
+  const responses=await pool.query("SELECT id,guest_name AS \"guestName\",attendance_choice AS \"attendanceChoice\",attending,message,wish_approved AS \"wishApproved\",graduate_reply AS \"graduateReply\" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 1000",[site.id]);
   const data=responses.rows;
   const choice=r=>r.attendanceChoice|| (r.attending===true?'yes':r.attending===false?'no':null);
   res.set('Cache-Control','private, no-store');
-  res.json({graduateName:site.graduate_name,total:data.length,attending:data.filter(r=>choice(r)==='yes').map(r=>r.guestName),maybe:data.filter(r=>choice(r)==='maybe').map(r=>r.guestName),notAttending:data.filter(r=>choice(r)==='no').map(r=>r.guestName),wishes:data.filter(r=>r.message&&r.wishApproved).map(r=>({guestName:r.guestName,message:r.message}))});
+  res.json({graduateName:site.graduate_name,total:data.length,attending:data.filter(r=>choice(r)==='yes').map(r=>r.guestName),maybe:data.filter(r=>choice(r)==='maybe').map(r=>r.guestName),notAttending:data.filter(r=>choice(r)==='no').map(r=>r.guestName),wishes:data.filter(r=>r.message&&r.wishApproved).map(r=>({id:r.id,guestName:r.guestName,message:r.message,graduateReply:r.graduateReply||null}))});
+ }catch(err){next(err)}
+});
+app.put('/api/graduate/guests/:token/wishes/:wishId/reply',async(req,res,next)=>{
+ try{
+  const requested=String(req.params.token||'');
+  const branded=requested.match(/^([a-z0-9-]{3,63})-([a-f0-9]{20})$/);
+  const token=branded?branded[2]:requested;
+  if(!/^(?:[a-f0-9]{20}|[a-f0-9]{64})$/.test(token))return res.status(404).json({message:'Link unavailable'});
+  const reply=req.body?.reply;
+  if(typeof reply!=='string'||reply.trim().length>600)return res.status(400).json({message:'Reply must be at most 600 characters'});
+  if(!/^[0-9a-f-]{36}$/i.test(req.params.wishId))return res.status(400).json({message:'Invalid wish'});
+  const {rows}=await pool.query("SELECT id FROM graduation_sites WHERE (guest_share_short=$1 OR guest_share_token=$1) AND status='active' AND ($2::text IS NULL OR slug=$2)",[token,branded?branded[1]:null]);
+  if(!rows.length)return res.status(404).json({message:'Link unavailable'});
+  const result=await pool.query("UPDATE graduation_rsvps SET graduate_reply=$1, graduate_replied_at=CASE WHEN $1='' THEN NULL ELSE NOW() END WHERE id=$2 AND site_id=$3 AND wish_approved=TRUE AND TRIM(message)<>'' RETURNING graduate_reply AS \"graduateReply\" ",[reply.trim(),req.params.wishId,rows[0].id]);
+  if(!result.rowCount)return res.status(404).json({message:'Wish unavailable'});
+  res.set('Cache-Control','no-store');res.json({graduateReply:result.rows[0].graduateReply||null});
  }catch(err){next(err)}
 });
 app.get('/api/admin/sites', requireAdmin, async (_req, res, next) => {
