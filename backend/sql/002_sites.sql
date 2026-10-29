@@ -56,3 +56,5 @@ ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS music_section VARCHAR(24) 
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS maps_url TEXT;
 
 ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS guest_share_token VARCHAR(80) UNIQUE;
+
+ALTER TABLE graduation_sites ADD COLUMN IF NOT EXISTS guest_share_short VARCHAR(24) UNIQUE;
