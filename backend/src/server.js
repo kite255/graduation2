@@ -364,21 +364,23 @@ app.get('/api/admin/sites/:id/rsvps',requireAdmin,async(req,res,next)=>{
 app.post('/api/admin/sites/:id/guest-link',requireAdmin,async(req,res,next)=>{
  try{
   const token=randomBytes(32).toString('hex');
-  const {rows}=await pool.query('UPDATE graduation_sites SET guest_share_token=$1 WHERE id=$2 RETURNING guest_share_token',[token,req.params.id]);
+  const shortToken=randomBytes(10).toString('hex');
+  const {rows}=await pool.query('UPDATE graduation_sites SET guest_share_token=$1,guest_share_short=$2 WHERE id=$3 RETURNING guest_share_token',[token,shortToken,req.params.id]);
   if(!rows.length)return res.status(404).json({message:'Graduate not found'});
-  res.json({token});
+  res.json({token:shortToken});
  }catch(err){next(err)}
 });
 app.get('/api/admin/sites/:id/guest-link',requireAdmin,async(req,res,next)=>{
  try{
-  const {rows}=await pool.query('SELECT guest_share_token AS token FROM graduation_sites WHERE id=$1',[req.params.id]);
+  const {rows}=await pool.query('SELECT guest_share_token,guest_share_short FROM graduation_sites WHERE id=$1',[req.params.id]);
+  if(rows.length&&rows[0].guest_share_token&&!rows[0].guest_share_short){const shortToken=randomBytes(10).toString('hex');await pool.query('UPDATE graduation_sites SET guest_share_short=$1 WHERE id=$2',[shortToken,req.params.id]);rows[0].guest_share_short=shortToken;}
   if(!rows.length)return res.status(404).json({message:'Graduate not found'});
-  res.json({token:rows[0].token});
+  res.json({token:rows[0].guest_share_short||null});
  }catch(err){next(err)}
 });
 app.delete('/api/admin/sites/:id/guest-link',requireAdmin,async(req,res,next)=>{
  try{
-  const result=await pool.query('UPDATE graduation_sites SET guest_share_token=NULL WHERE id=$1',[req.params.id]);
+  const result=await pool.query('UPDATE graduation_sites SET guest_share_token=NULL,guest_share_short=NULL WHERE id=$1',[req.params.id]);
   if(!result.rowCount)return res.status(404).json({message:'Graduate not found'});
   res.json({success:true});
  }catch(err){next(err)}
@@ -386,8 +388,8 @@ app.delete('/api/admin/sites/:id/guest-link',requireAdmin,async(req,res,next)=>{
 app.get('/api/graduate/guests/:token',async(req,res,next)=>{
  try{
   const token=String(req.params.token||'');
-  if(!/^[a-f0-9]{64}$/.test(token))return res.status(404).json({message:'Link unavailable'});
-  const {rows}=await pool.query("SELECT id,graduate_name FROM graduation_sites WHERE guest_share_token=$1 AND status='active'",[token]);
+  if(!/^(?:[a-f0-9]{20}|[a-f0-9]{64})$/.test(token))return res.status(404).json({message:'Link unavailable'});
+  const {rows}=await pool.query("SELECT id,graduate_name FROM graduation_sites WHERE (guest_share_short=$1 OR guest_share_token=$1) AND status='active'",[token]);
   if(!rows.length)return res.status(404).json({message:'Link unavailable'});
   const site=rows[0];
   const responses=await pool.query("SELECT guest_name AS \"guestName\",attendance_choice AS \"attendanceChoice\",attending,message,wish_approved AS \"wishApproved\" FROM graduation_rsvps WHERE site_id=$1 ORDER BY created_at DESC LIMIT 1000",[site.id]);
