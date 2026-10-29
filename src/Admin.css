@@ -125,3 +125,25 @@
 .admin-header-actions{display:flex;align-items:center;gap:15px}.admin-header-role{padding:8px 11px;border:1px solid #e8d9d6;border-radius:99px;color:#835d65;font-size:11px}
 .refreshed-admin-topbar .admin-small-btn{border-radius:9px;font-weight:700}.refreshed-admin-topbar .admin-back{white-space:nowrap}
 @media(max-width:650px){.admin-topbar.refreshed-admin-topbar{padding:13px 16px;gap:10px}.admin-header-role{display:none}.admin-header-brand strong{font-size:15px}.admin-header-brand small{font-size:8px}.admin-header-actions{gap:8px}.refreshed-admin-topbar .admin-back{font-size:0;gap:0}.refreshed-admin-topbar .admin-back svg{width:19px;height:19px}.refreshed-admin-topbar .admin-small-btn{padding:9px}}
+
+/* Scannable, scalable graduate directory */
+.admin-directory-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.admin-directory-header h2{margin:5px 0 4px}
+.admin-directory-header .admin-hint{margin:0}
+.admin-directory-sort{display:grid;gap:5px;font-size:12px;font-weight:700;color:#624b51;min-width:170px}
+.admin-directory-sort select{background:#fff;border:1px solid #d9c7c6;border-radius:8px;padding:10px;color:#38272c;min-height:43px}
+.admin-directory-list{display:grid;gap:10px}
+.admin-directory-item{border-radius:12px;border:1px solid #eaded9;background:#fff;min-width:0}
+.admin-directory-item>div:first-child{min-width:0}
+.admin-directory-item>div:first-child strong{overflow-wrap:anywhere}
+.admin-directory-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.admin-status-pill{display:inline-flex;align-items:center;justify-content:center;border-radius:100px;padding:5px 9px;background:#f4ece8;color:#735c57;text-transform:capitalize;font-size:11px;font-weight:700}
+.admin-status-active,.admin-payment-paid{background:#e7f4eb;color:#21683a}
+.admin-status-draft,.admin-payment-pending{background:#fff2df;color:#925d18}
+.admin-status-suspended{background:#f8e5e7;color:#933e4d}
+.admin-directory-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid #ede0dc;margin-top:18px;padding-top:18px;font-size:12px;color:#78666b}
+.admin-directory-pagination>div{display:flex;align-items:center;gap:12px}
+.admin-directory-pagination button{border:1px solid #d7bec4;background:#fff;border-radius:8px;color:#742b3a;padding:9px 13px;font-weight:700;cursor:pointer}
+.admin-directory-pagination button:disabled{opacity:.45;cursor:not-allowed}
+.admin-directory-empty{padding:22px;background:#fff9f5;border:1px dashed #e4d4cf;border-radius:10px;color:#80646a;text-align:center}
+@media(max-width:650px){.admin-directory-header{align-items:stretch}.admin-directory-sort{width:100%}.admin-directory-pagination{align-items:stretch}.admin-directory-pagination>div{justify-content:space-between;width:100%}.admin-directory-meta{gap:5px}}
