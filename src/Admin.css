@@ -147,3 +147,17 @@
 .admin-directory-pagination button:disabled{opacity:.45;cursor:not-allowed}
 .admin-directory-empty{padding:22px;background:#fff9f5;border:1px dashed #e4d4cf;border-radius:10px;color:#80646a;text-align:center}
 @media(max-width:650px){.admin-directory-header{align-items:stretch}.admin-directory-sort{width:100%}.admin-directory-pagination{align-items:stretch}.admin-directory-pagination>div{justify-content:space-between;width:100%}.admin-directory-meta{gap:5px}}
+
+/* Dedicated guest and wishes management */
+.admin-guests-workspace{min-width:0}
+.admin-guests-content{display:grid;gap:18px;margin-top:18px}
+.admin-guests-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.admin-guests-metric{border:1px solid #e9d9d7;border-radius:12px;padding:18px;background:#fffaf8;display:grid;gap:8px}
+.admin-guests-metric span{font-size:12px;color:#80666b}
+.admin-guests-metric strong{font-size:28px;color:#70283a}
+.admin-guests-content .site-rsvp-panel{max-width:none!important;width:100%;padding:20px;border:1px solid #e6d7d3;border-radius:12px;background:#fff}
+.admin-guests-content .rsvp-admin-list{max-height:none;font-size:13px}
+.admin-guests-content .rsvp-admin-list>p{padding:14px 0}
+.admin-guests-content .admin-rsvp-tools{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:16px 0}
+@media(max-width:850px){.admin-guests-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.admin-guests-metric{padding:13px}.admin-guests-metric strong{font-size:23px}.admin-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
