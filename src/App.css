@@ -535,3 +535,6 @@ body{background:var(--ivory)}
 .gallery-dialog-grid.gallery-masonry-all{columns:4}
 @media(max-width:960px){.gallery-grid.gallery-masonry,.gallery-dialog-grid.gallery-masonry-all{columns:3;column-gap:12px}}
 @media(max-width:680px){.gallery-grid.gallery-masonry,.gallery-dialog-grid.gallery-masonry-all{columns:2;column-gap:10px}.gallery-grid.gallery-masonry .gallery-photo{margin-bottom:10px;border-radius:9px}.gallery-more{margin-top:20px}}
+
+/* Compact public graduate replies beneath approved wishes */
+.public-graduate-reply{margin-top:12px;padding:11px 14px;background:#faf0f1;border-left:3px solid #84374a;border-radius:0 9px 9px 0;text-align:left;max-width:100%}.public-graduate-reply span{display:block;color:#844f5e;font-size:9px;font-weight:800;letter-spacing:.12em}.public-graduate-reply p{margin:5px 0 0!important;font-size:13px!important;line-height:1.5!important;color:#593d45;white-space:pre-wrap;overflow-wrap:anywhere}.wish-slide .wish-card:has(.public-graduate-reply){justify-content:flex-start}.all-wish-item .public-graduate-reply{margin-top:10px}@media(max-width:650px){.public-graduate-reply{padding:9px 11px;margin-top:9px}}
