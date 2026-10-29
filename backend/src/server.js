@@ -270,7 +270,7 @@ app.get('/api/site', async (req, res, next) => {
     if (!slug) return res.json({ site: null });
     const site = await resolveSite(req);
     if (!site) return res.status(404).json({ message: 'Website not available' });
-    res.json({ site: { graduateName: site.graduate_name, slug: site.slug, eventDate: site.event_date, eventTime: site.event_time, venue: site.venue, message: site.message, giftPhone:site.gift_phone, giftName:site.gift_name, giftProvider:site.gift_provider,giftMethods:site.gift_methods||[],musicFile:site.music_file?'/uploads/music/'+encodeURIComponent(site.music_file):null,musicSection:site.music_section, theme:site.theme,showGallery:site.show_gallery,showWishes:site.show_wishes,showGifts:site.show_gifts,showCountdown:site.show_countdown, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
+    res.json({ site: { graduateName: site.graduate_name, slug: site.slug, eventDate: site.event_date, eventTime: site.event_time, venue: site.venue, mapsUrl:site.maps_url, message: site.message, giftPhone:site.gift_phone, giftName:site.gift_name, giftProvider:site.gift_provider,giftMethods:site.gift_methods||[],musicFile:site.music_file?'/uploads/music/'+encodeURIComponent(site.music_file):null,musicSection:site.music_section, theme:site.theme,showGallery:site.show_gallery,showWishes:site.show_wishes,showGifts:site.show_gifts,showCountdown:site.show_countdown, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
   } catch (err) { next(err); }
 });
 app.get('/api/sites/:slug', async (req, res, next) => {
@@ -278,7 +278,7 @@ app.get('/api/sites/:slug', async (req, res, next) => {
     if (!/^[a-z0-9](?:[a-z0-9_-]{0,61}[a-z0-9])?$/.test(req.params.slug)) return res.status(404).json({message:'Website not available'});
     const site = await resolveSite(req, req.params.slug);
     if (!site) return res.status(404).json({message:'Website not available'});
-    res.json({ site: { graduateName: site.graduate_name, slug:site.slug, eventDate:site.event_date, eventTime:site.event_time, venue:site.venue, message:site.message, giftPhone:site.gift_phone, giftName:site.gift_name, giftProvider:site.gift_provider,giftMethods:site.gift_methods||[],musicFile:site.music_file?'/uploads/music/'+encodeURIComponent(site.music_file):null,musicSection:site.music_section, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
+    res.json({ site: { graduateName: site.graduate_name, slug:site.slug, eventDate:site.event_date, eventTime:site.event_time, venue:site.venue, mapsUrl:site.maps_url, message:site.message, giftPhone:site.gift_phone, giftName:site.gift_name, giftProvider:site.gift_provider,giftMethods:site.gift_methods||[],musicFile:site.music_file?'/uploads/music/'+encodeURIComponent(site.music_file):null,musicSection:site.music_section, heroImage: site.hero_image ? '/uploads/hero/' + encodeURIComponent(site.hero_image) : null } });
   } catch (err) { next(err); }
 });
 app.get('/api/sites/:slug/gallery', async (req, res, next) => {
@@ -362,7 +362,7 @@ app.get('/api/admin/sites/:id/rsvps',requireAdmin,async(req,res,next)=>{
 });
 app.get('/api/admin/sites', requireAdmin, async (_req, res, next) => {
   try {
-    const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, message, gift_phone AS "giftPhone", gift_name AS "giftName", gift_provider AS "giftProvider", gift_methods AS "giftMethods", music_file AS "musicFilename",music_section AS "musicSection", hero_image AS "heroImageFilename", theme,show_gallery AS "showGallery",show_wishes AS "showWishes",show_gifts AS "showGifts",show_countdown AS "showCountdown", status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt", (SELECT COUNT(*)::int FROM graduation_rsvps r WHERE r.site_id = graduation_sites.id) AS "rsvpCount", (SELECT COUNT(*)::int FROM gallery_images g WHERE g.site_id = graduation_sites.id) AS "photoCount" FROM graduation_sites ORDER BY created_at DESC');
+    const { rows } = await pool.query('SELECT id, slug, graduate_name AS "graduateName", event_date AS "eventDate", event_time AS "eventTime", venue, maps_url AS "mapsUrl", message, gift_phone AS "giftPhone", gift_name AS "giftName", gift_provider AS "giftProvider", gift_methods AS "giftMethods", music_file AS "musicFilename",music_section AS "musicSection", hero_image AS "heroImageFilename", theme,show_gallery AS "showGallery",show_wishes AS "showWishes",show_gifts AS "showGifts",show_countdown AS "showCountdown", status, payment_status AS "paymentStatus", price_tzs AS "priceTzs", expires_at AS "expiresAt", (SELECT COUNT(*)::int FROM graduation_rsvps r WHERE r.site_id = graduation_sites.id) AS "rsvpCount", (SELECT COUNT(*)::int FROM gallery_images g WHERE g.site_id = graduation_sites.id) AS "photoCount" FROM graduation_sites ORDER BY created_at DESC');
     res.json(rows);
   } catch (err) { next(err); }
 });
@@ -387,7 +387,7 @@ app.post('/api/admin/sites', requireAdmin, async (req, res, next) => {
 });
 app.patch('/api/admin/sites/:id', requireAdmin, async (req, res, next) => {
   try {
-    const allowed = { graduateName:'graduate_name',eventDate:'event_date',eventTime:'event_time',venue:'venue',message:'message',giftPhone:'gift_phone',giftName:'gift_name',giftProvider:'gift_provider',giftMethods:'gift_methods',musicSection:'music_section',theme:'theme',showGallery:'show_gallery',showWishes:'show_wishes',showGifts:'show_gifts',showCountdown:'show_countdown',status:'status',paymentStatus:'payment_status',priceTzs:'price_tzs',expiresAt:'expires_at' };
+    const allowed = { graduateName:'graduate_name',eventDate:'event_date',eventTime:'event_time',venue:'venue',mapsUrl:'maps_url',message:'message',giftPhone:'gift_phone',giftName:'gift_name',giftProvider:'gift_provider',giftMethods:'gift_methods',musicSection:'music_section',theme:'theme',showGallery:'show_gallery',showWishes:'show_wishes',showGifts:'show_gifts',showCountdown:'show_countdown',status:'status',paymentStatus:'payment_status',priceTzs:'price_tzs',expiresAt:'expires_at' };
     const fields = Object.entries(allowed).filter(([key])=>Object.hasOwn(req.body,key));
     if (!fields.length) return res.status(400).json({message:'No changes provided'});
     if(Object.hasOwn(req.body,'giftPhone') && req.body.giftPhone && !/^\+?[0-9][0-9\s-]{7,22}$/.test(String(req.body.giftPhone).trim()))return res.status(400).json({message:'Invalid gift phone number'});
@@ -400,6 +400,7 @@ app.patch('/api/admin/sites/:id', requireAdmin, async (req, res, next) => {
       const methods=req.body.giftMethods;
       if(!Array.isArray(methods)||methods.length>8||methods.some(m=>!m||typeof m!=='object'||typeof m.provider!=='string'||typeof m.account!=='string'||typeof m.name!=='string'||m.provider.trim().length<1||m.provider.length>50||m.account.trim().length<2||m.account.length>80||m.name.length>120))return res.status(400).json({message:'Invalid gift methods (up to 8 permitted)'});
     }
+    if(Object.hasOwn(req.body,'mapsUrl') && req.body.mapsUrl){try{const u=new URL(req.body.mapsUrl);if(u.protocol!=='https:'||!['google.com','www.google.com','maps.google.com','maps.app.goo.gl','goo.gl'].includes(u.hostname)||u.pathname.startsWith('/url'))throw new Error('invalid')}catch{return res.status(400).json({message:'Enter a valid HTTPS Google Maps location link'})}}
     if(Object.hasOwn(req.body,'musicSection')&&!['hero','details','moments','rsvp','wishes','gifts','all'].includes(req.body.musicSection))return res.status(400).json({message:'Invalid music section'});
     const values = fields.map(([key])=>key === 'giftMethods' ? JSON.stringify(req.body[key]) : key === 'priceTzs' ? Number(req.body[key]) : (req.body[key] === '' ? null : req.body[key]));
     const updates = fields.map(([,column],i)=>`${column} = $${i+1}`).join(', ');
