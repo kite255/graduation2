@@ -42,3 +42,26 @@
 .graduate-reply p{margin-top:4px;font-size:13px;line-height:1.5}
 .graduate-reply-action{margin-top:8px;padding:7px 11px;font-size:12px}
 @media(max-width:650px){.graduate-guest-wish{padding:9px 0 11px}.graduate-wish-message{padding:10px 12px}.graduate-reply{margin-left:8px;padding:9px 11px}}
+
+/* Compact graduate portal, with small-screen tabs */
+.graduate-guest-tabs{display:none}
+.graduate-guest-group[hidden]{display:none!important}
+@media(max-width:690px){
+.graduate-guest-wrap{padding:23px 14px 45px}
+.graduate-guest-wrap h1{margin:7px 0 10px;font-size:30px}
+.graduate-guest-intro{font-size:12px;line-height:1.5}
+.graduate-guest-metrics{gap:8px;margin:17px 0}
+.graduate-guest-metrics>div{padding:12px 14px;border-radius:11px;gap:3px}
+.graduate-guest-metrics strong{font-size:25px}
+.graduate-guest-metrics span{font-size:11px}
+.graduate-guest-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;background:#f4e9e8;border-radius:12px;margin-bottom:12px}
+.graduate-guest-tabs button{min-height:42px;border:0;border-radius:9px;background:transparent;color:#754955;font-weight:700;cursor:pointer;font-size:12px}
+.graduate-guest-tabs button.active{background:#fff;color:#70283a;box-shadow:0 2px 7px #3b20200e}
+.graduate-guest-columns{display:block}
+.graduate-guest-columns>section.graduate-mobile-hidden{display:none}
+.graduate-guest-columns>section{padding:15px;border-radius:12px}
+.graduate-guest-columns h2{font-size:19px;padding-bottom:11px;margin-bottom:5px}
+.graduate-guest-group{padding:9px 0}
+.graduate-guest-group ul{gap:6px}
+.graduate-guest-group li{padding:8px 10px;font-size:12px}
+}
