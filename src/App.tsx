@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Pause, Play, Share2, Copy, Check, Images, Send, LockKeyhole, Gift, Camera, Heart, Globe2, ShieldCheck } from 'lucide-react'
+import { CalendarDays, Clock3, MapPin, ArrowUpRight, GraduationCap, Menu, X, ChevronLeft, ChevronRight, Share2, Copy, Check, Images, Send, LockKeyhole, Gift, Camera, Heart, Globe2, ShieldCheck } from 'lucide-react'
 import './App.css'
 
 const platformContactUrl = 'https://wa.me/255743621712?text=Hello%2C%20I%27m%20interested%20in%20getting%20a%20graduation%20website.'
@@ -55,9 +55,7 @@ function App() {
   const [allWishesPage,setAllWishesPage]=useState(0)
   const [allWishesLoading,setAllWishesLoading]=useState(false)
   const [allWishesError,setAllWishesError]=useState('')
-  const [reducedMotion,setReducedMotion]=useState(false)
   const [touchStart,setTouchStart]=useState<number|null>(null)
-  useEffect(()=>{const media=window.matchMedia('(prefers-reduced-motion: reduce)');const sync=()=>setReducedMotion(media.matches);sync();media.addEventListener('change',sync);return()=>media.removeEventListener('change',sync)},[])
   useEffect(()=>{
     if(!pathSlug)return
     const controller=new AbortController()
@@ -81,8 +79,8 @@ function App() {
       .finally(()=>{if(!controller.signal.aborted)setAllWishesLoading(false)})
     return ()=>controller.abort()
   },[viewAllWishes,pathSlug,allWishesPage])
-  function openAllWishes(){setViewAllWishes(true);setWishPaused(true);if(allWishesPage===0)setAllWishesPage(1)}
-  function closeAllWishes(){setViewAllWishes(false);setWishPaused(false)}
+  function openAllWishes(){setViewAllWishes(true);if(allWishesPage===0)setAllWishesPage(1)}
+  function closeAllWishes(){setViewAllWishes(false)}
   const [gallery, setGallery] = useState<GalleryImage[]>([])
   const [galleryError, setGalleryError] = useState(false)
   const [showAllPhotos,setShowAllPhotos]=useState(false)
