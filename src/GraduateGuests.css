@@ -18,3 +18,5 @@
 .graduate-guest-wish p{font-size:14px;margin-bottom:9px;overflow-wrap:anywhere}
 .graduate-guest-wish strong{font-size:12px}
 @media(max-width:650px){.graduate-guest-columns>section{padding:20px}.graduate-guest-group ul{grid-template-columns:1fr 1fr}.graduate-guest-metrics>div{padding:16px}}
+
+.graduate-reply{margin:14px 0;padding:12px 14px;border-left:3px solid #8c485b;background:#fcf4f3;border-radius:0 9px 9px 0}.graduate-reply span{font-size:11px;font-weight:700;color:#742b3a}.graduate-reply p{margin:5px 0 0;white-space:pre-wrap}.graduate-reply-action,.graduate-reply-editor button{margin-top:12px;background:#fff;border:1px solid #cfaeb7;color:#742b3a;border-radius:8px;padding:9px 13px;font-weight:700;cursor:pointer}.graduate-reply-editor{display:grid;gap:8px;margin-top:10px}.graduate-reply-editor textarea{width:100%;padding:12px;border:1px solid #dbc6c8;border-radius:9px;font:inherit;resize:vertical}.graduate-reply-editor>div{display:flex;gap:9px}.graduate-reply-editor button:first-child{background:#742b3a;color:#fff}.graduate-reply-editor button:disabled{opacity:.5}
