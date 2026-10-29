@@ -139,7 +139,7 @@ export default function Admin() {
   }
   function exportGuestResponses(id:string,graduateName:string){
     const records=rsvps[id]||[]
-    const selected=records.filter(guest=>(attendanceFilters[id]||'all')==='all'||attendanceCategory(guest)===attendanceFilters[id])
+    const selected=records.filter(guest=>attendanceCategory(guest)!=='empty'&&((attendanceFilters[id]||'all')==='all'||attendanceCategory(guest)===attendanceFilters[id]))
     const cell=(value:string)=>'"'+( /^[=+\-@\t\r]/.test(value)? "'"+value:value).replace(/"/g,'""')+'"'
     const lines=[['Name','Attendance','Message'],...selected.map(guest=>[guest.guestName,attendanceCategory(guest),guest.message])]
     const csv='\uFEFF'+lines.map(row=>row.map(value=>cell(value)).join(',')).join('\r\n')
