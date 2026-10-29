@@ -326,7 +326,7 @@ app.get('/api/sites/:slug/wishes',async(req,res,next)=>{
   const offset=(page-1)*limit;
   const countResult=await pool.query("SELECT COUNT(*)::int AS total FROM graduation_rsvps WHERE site_id=$1 AND wish_approved=TRUE AND message<>''",[site.id]);
   const total=countResult.rows[0].total;
-  const {rows}=await pool.query("SELECT guest_name AS \"guestName\",message,created_at AS \"createdAt\" FROM graduation_rsvps WHERE site_id=$1 AND wish_approved=TRUE AND message<>'' ORDER BY created_at DESC,id DESC LIMIT $2 OFFSET $3",[site.id,limit,offset]);
+  const {rows}=await pool.query("SELECT guest_name AS \"guestName\",message,graduate_reply AS \"graduateReply\",created_at AS \"createdAt\" FROM graduation_rsvps WHERE site_id=$1 AND wish_approved=TRUE AND message<>'' ORDER BY created_at DESC,id DESC LIMIT $2 OFFSET $3",[site.id,limit,offset]);
   res.json({items:rows,page,total,totalPages:Math.ceil(total/limit)});
  }catch(err){next(err)}
 });
