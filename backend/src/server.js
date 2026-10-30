@@ -313,7 +313,7 @@ app.post('/api/sites/:slug/rsvp', limitRsvp, async (req,res,next) => {
     if(!name || name.length>120 || (choice!==null && !['yes','maybe','no'].includes(choice)) || message.length>1200 || (choice===null && !message)) return res.status(400).json({message:'Enter your name and choose attendance or write a wish'});
     const recent=await pool.query('SELECT 1 FROM graduation_rsvps WHERE site_id=$1 AND lower(guest_name)=lower($2) AND created_at>NOW()-INTERVAL \'10 minutes\' LIMIT 1',[site.id,name]);
     if(recent.rowCount)return res.status(409).json({message:'A response with this name was recently submitted. Please try later.'});
-    await pool.query('INSERT INTO graduation_rsvps(id,site_id,guest_name,attending,message,wish_approved,attendance_choice) VALUES($1,$2,$3,$4,$5,TRUE,$6)',[randomUUID(),site.id,name,attending,message,choice]);
+    await pool.query('INSERT INTO graduation_rsvps(id,site_id,guest_name,attending,message,wish_approved,attendance_choice) VALUES($1,$2,$3,$4,$5,FALSE,$6)',[randomUUID(),site.id,name,attending,message,choice]);
     res.status(201).json({success:true,message:'Thank you for responding'});
   } catch(err){next(err)}
 });
@@ -423,7 +423,22 @@ app.get('/api/graduate/guests/:token',async(req,res,next)=>{
   const data=responses.rows;
   const choice=r=>r.attendanceChoice|| (r.attending===true?'yes':r.attending===false?'no':null);
   res.set('Cache-Control','private, no-store');
-  res.json({graduateName:site.graduate_name,total:data.length,attending:data.filter(r=>choice(r)==='yes').map(r=>r.guestName),maybe:data.filter(r=>choice(r)==='maybe').map(r=>r.guestName),notAttending:data.filter(r=>choice(r)==='no').map(r=>r.guestName),wishes:data.filter(r=>r.message&&r.wishApproved).map(r=>({id:r.id,guestName:r.guestName,message:r.message,graduateReply:r.graduateReply||null}))});
+  res.json({graduateName:site.graduate_name,total:data.length,attending:data.filter(r=>choice(r)==='yes').map(r=>r.guestName),maybe:data.filter(r=>choice(r)==='maybe').map(r=>r.guestName),notAttending:data.filter(r=>choice(r)==='no').map(r=>r.guestName),wishes:data.filter(r=>r.message&&r.message.trim()).map(r=>({id:r.id,guestName:r.guestName,message:r.message,wishApproved:r.wishApproved,graduateReply:r.graduateReply||null}))});
+ }catch(err){next(err)}
+});
+app.put('/api/graduate/guests/:token/wishes/:wishId/visibility',async(req,res,next)=>{
+ try{
+  const requested=String(req.params.token||'');
+  const branded=requested.match(/^([a-z0-9-]{3,63})-([a-f0-9]{20})$/);
+  const token=branded?branded[2]:requested;
+  if(!/^(?:[a-f0-9]{20}|[a-f0-9]{64})$/.test(token))return res.status(404).json({message:'Link unavailable'});
+  if(typeof req.body?.approved!=='boolean')return res.status(400).json({message:'Approval must be true or false'});
+  if(!/^[0-9a-f-]{36}$/i.test(req.params.wishId))return res.status(400).json({message:'Invalid wish'});
+  const {rows}=await pool.query("SELECT id FROM graduation_sites WHERE (guest_share_short=$1 OR guest_share_token=$1) AND status='active' AND ($2::text IS NULL OR slug=$2)",[token,branded?branded[1]:null]);
+  if(!rows.length)return res.status(404).json({message:'Link unavailable'});
+  const result=await pool.query("UPDATE graduation_rsvps SET wish_approved=$1 WHERE id=$2 AND site_id=$3 AND TRIM(message)<>'' RETURNING wish_approved AS \"wishApproved\" ",[req.body.approved,req.params.wishId,rows[0].id]);
+  if(!result.rowCount)return res.status(404).json({message:'Wish not found'});
+  res.set('Cache-Control','no-store');res.json({wishApproved:result.rows[0].wishApproved});
  }catch(err){next(err)}
 });
 app.put('/api/graduate/guests/:token/wishes/:wishId/reply',async(req,res,next)=>{
@@ -437,7 +452,7 @@ app.put('/api/graduate/guests/:token/wishes/:wishId/reply',async(req,res,next)=>
   if(!/^[0-9a-f-]{36}$/i.test(req.params.wishId))return res.status(400).json({message:'Invalid wish'});
   const {rows}=await pool.query("SELECT id FROM graduation_sites WHERE (guest_share_short=$1 OR guest_share_token=$1) AND status='active' AND ($2::text IS NULL OR slug=$2)",[token,branded?branded[1]:null]);
   if(!rows.length)return res.status(404).json({message:'Link unavailable'});
-  const result=await pool.query("UPDATE graduation_rsvps SET graduate_reply=$1, graduate_replied_at=CASE WHEN $1='' THEN NULL ELSE NOW() END WHERE id=$2 AND site_id=$3 AND wish_approved=TRUE AND TRIM(message)<>'' RETURNING graduate_reply AS \"graduateReply\" ",[reply.trim(),req.params.wishId,rows[0].id]);
+  const result=await pool.query("UPDATE graduation_rsvps SET graduate_reply=$1, graduate_replied_at=CASE WHEN $1='' THEN NULL ELSE NOW() END WHERE id=$2 AND site_id=$3 AND TRIM(message)<>'' RETURNING graduate_reply AS \"graduateReply\" ",[reply.trim(),req.params.wishId,rows[0].id]);
   if(!result.rowCount)return res.status(404).json({message:'Wish unavailable'});
   res.set('Cache-Control','no-store');res.json({graduateReply:result.rows[0].graduateReply||null});
  }catch(err){next(err)}
