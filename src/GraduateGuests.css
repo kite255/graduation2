@@ -65,3 +65,5 @@
 .graduate-guest-group ul{gap:6px}
 .graduate-guest-group li{padding:8px 10px;font-size:12px}
 }
+
+.graduate-approval-action{display:flex;justify-content:flex-start;margin-top:9px}.graduate-approval-action button{border:1px solid #b98796;border-radius:999px;padding:8px 13px;background:#742b3a;color:#fff;font-size:12px;font-weight:700;cursor:pointer}.graduate-approval-action button:disabled{opacity:.5}.graduate-wish-message .graduate-wish-eyebrow+ .graduate-wish-eyebrow{margin-top:5px;color:#987b82!important}
